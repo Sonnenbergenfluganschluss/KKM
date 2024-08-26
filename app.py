@@ -31,26 +31,26 @@ u_sin_pitanie = {'Ht': 'Liv',
                 'Si': 'Gb',
                 'Hg': 'Liv',
                 'Th': 'Gb',
-                'Sp': ['Ht', 'Hg'],
-                'St': ['Si', 'Th'],
+                'Sp': 'Hg',
+                'St': 'Th',
                 'Lu': 'Sp',
                 'Co': 'St',
                 'Kid': 'Lu',
                 'Bl': 'Co',
                 'Liv': 'Kid',
                 'Gb': 'Bl'}
-u_sin_Ke = {'Hg': 'Gb',
-            'Th': 'Liv',
-            'Sp': 'Si',
-            'St': 'Ht',
-            'Lu': ['Si', 'Th'],
-            'Co': ['Ht', 'Hg'],
+u_sin_Ke = {'Hg': 'Bl',
+            'Ht': 'Bl',
+            'St': 'Liv',
+            'Lu': ['Th','Si'],
+            'Co': ['Hg', 'Ht'],
             'Kid': 'St',
             'Bl': 'Sp',
             'Liv': 'Co',
             'Gb': 'Lu',
-            'Ht': 'Bl',
-            'Si': 'Kid'}
+            'Th': 'Kid',
+            'Si': 'Kid',
+            'Sp':'Gb'}
 home_Ke = {'Liv': 'Gb',
             'Gb': 'Liv',
             'Ht': 'Si',
@@ -144,35 +144,95 @@ if date:
     # Вводим канал в застое:
     plus = st.text_input('Введите канал в застое', '')
     if plus:
-        st.markdown("""Возможные каналы в недостатке:""")
+        st.markdown("""### Возможные каналы в недостатке:""")
         st.markdown(f"""по стволам: {get_Ke(stvoly_Ke, plus)}""")    
         st.markdown(f"""по ветвям: {get_Ke(vetvi_Ke, plus)}""")        
         st.markdown(f"""по y-син: {u_sin_Ke[plus]}""")        
         st.markdown(f"""внутри дома: {home_Ke[plus]}""")        
         
-        y = [get_Ke(stvoly_Ke, plus), get_Ke(vetvi_Ke, plus), u_sin_Ke[plus], home_Ke[plus]]
-    
+        if type(u_sin_Ke[plus]) == type(list()):
+            y = [get_Ke(stvoly_Ke, plus), get_Ke(vetvi_Ke, plus), u_sin_Ke[plus][0], u_sin_Ke[plus][1], home_Ke[plus]]
+        else:
+            y = [get_Ke(stvoly_Ke, plus), get_Ke(vetvi_Ke, plus), u_sin_Ke[plus], home_Ke[plus]]
+
+        st.markdown("""### Выбор точек питания по У-СИН (перечисление по мере снижения эффективности):""")
+        canals = []
+
+        df_2 = pd.DataFrame(
+            columns=list(set(y)),
+            index=["Точка трансформации", "Точка качества дома", "Точка сезонной ци", "Точки трансформации сезонной ци"]
+        )
+
+        for el in y:
+            canals.append(u_sin_pitanie[el])
+            try:
+                df_2.loc[df_2.index[0], el] = f'{u_sin_pitanie[el]}{qi.loc[u_sin.loc[u_sin_Ke[el], "Стихия"].mode()[0], u_sin_pitanie[el]]}'
+            except:
+                df_2.loc[df_2.index[0], el] = f'{u_sin_pitanie[el]}{qi.loc[u_sin.loc[u_sin_Ke[el], "Стихия"], u_sin_pitanie[el]]}'
+            
+            try:
+                df_2.loc[df_2.index[1], el] = f'{u_sin_pitanie[el]}{qi.loc[u_sin.loc[u_sin_pitanie[el], "Стихия"].mode()[0], u_sin_pitanie[el]]}'
+            except:
+                df_2.loc[df_2.index[1], el] = f'{u_sin_pitanie[el]}{qi.loc[u_sin.loc[u_sin_pitanie[el], "Стихия"], u_sin_pitanie[el]]}'
+
+            
+            cell = " "
+            for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[el, "Стихия"]]].index.to_list():
+                cell+=(f'{c}{qi.loc[stihiya[season_qi.loc[el, "Стихия"]], c]}, ')
+                canals.append(c)
+            df_2.loc[df_2.index[2], el] = cell
+
+            celll = " "
+            for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[el, "Стихия"]]].index.to_list():
+                celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[el, "Стихия"]]], c]}, ')  
+            df_2.loc[df_2.index[3], el] = celll 
+
+        #Выводим DataFrame в интерфейсе
+        st.dataframe(df_2)    
+        
+        st.markdown(f"""Возможные каналы для питания недостатка: {canals}""")  
+        st.markdown(f"""Из них конфликтуют с запрещёнными: {set(canals) & set(df["Не используем"])}""")
+        st.markdown(f"""Предпочтительно использовать: {set(canals) & df.loc["Zang Fu Xu", "Используем"]}""")  
+
 
     # Для канала в недостатке:
-    minus = st.text_input('Или введите канал в недостатке', '')
+    minus = st.text_input('Введите канал в недостатке', '')
+    
     if minus:
-        st.markdown("""Выбор точек питания по У-СИН по снижению эффективности:""")
-        st.markdown(f"""Точка трансформации:""")
+        st.markdown("""### Выбор точек питания по У-СИН (перечисление по мере снижения эффективности):""")
+        
+        df_2 = pd.DataFrame(
+            columns=[minus],
+            index=["Точка трансформации", "Точка качества дома", "Точка сезонной ци", "Точки трансформации сезонной ци"]
+        )
+        
+        canals = []
+        canals.append(u_sin_pitanie[minus])
         try:
-            st.markdown(f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}')
+            df_2.loc[df_2.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
         except:
-            st.markdown(f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"], u_sin_pitanie[minus]]}')
+            df_2.loc[df_2.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"], u_sin_pitanie[minus]]}'
         
-        st.markdown(f"""Точка качества дома:""")
         try:
-            st.markdown(f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}')
+            df_2.loc[df_2.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
         except:
-            st.markdown(f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"], u_sin_pitanie[minus]]}')
+            df_2.loc[df_2.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"], u_sin_pitanie[minus]]}'
+
         
-        st.markdown(f"""Точка сезонной ци:""")
+        cell = " "
         for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
-            st.markdown(f'{c}{qi.loc[stihiya[season_qi.loc[minus, "Стихия"]], c]}')
-        
-        st.markdown(f"""Точки трансформации сезонной ци:""")
+            cell+=(f'{c}{qi.loc[stihiya[season_qi.loc[minus, "Стихия"]], c]}, ')
+            canals.append(c)
+        df_2.loc[df_2.index[2], minus] = cell
+
+        celll = " "
         for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
-            st.markdown(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[minus, "Стихия"]]], c]}')
+            celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[minus, "Стихия"]]], c]}, ')  
+        df_2.loc[df_2.index[3], minus] = celll 
+
+        #Выводим DataFrame в интерфейсе
+        st.dataframe(df_2)    
+
+        st.markdown(f"""Возможные каналы для питания недостатка: {canals}""")  
+        st.markdown(f"""Из них конфликтуют с запрещёнными: {set(canals) & set(df["Не используем"])}""")
+        st.markdown(f"""Предпочтительно использовать: {set(canals) & df.loc["Zang Fu Xu", "Используем"]}""")  
