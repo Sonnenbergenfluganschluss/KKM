@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import re
 
 @st.cache_data
 def get_Ke(d, value):
@@ -143,17 +144,20 @@ if date:
 
     # Вводим канал в застое:
     plus = st.text_input('Введите канал в застое', '')
-    if plus:
-        st.markdown("""### Возможные каналы в недостатке:""")
-        st.markdown(f"""по стволам: {get_Ke(stvoly_Ke, plus)}""")    
-        st.markdown(f"""по ветвям: {get_Ke(vetvi_Ke, plus)}""")        
-        st.markdown(f"""по y-син: {u_sin_Ke[plus]}""")        
-        st.markdown(f"""внутри дома: {home_Ke[plus]}""")        
-        
-        if type(u_sin_Ke[plus]) == type(list()):
-            y = [get_Ke(stvoly_Ke, plus), get_Ke(vetvi_Ke, plus), u_sin_Ke[plus][0], u_sin_Ke[plus][1], home_Ke[plus]]
-        else:
-            y = [get_Ke(stvoly_Ke, plus), get_Ke(vetvi_Ke, plus), u_sin_Ke[plus], home_Ke[plus]]
+    canals_plus = re.sub('[:,/.;#$%^&]', ' ', plus).split()
+    if canals_plus:
+        y = []
+        for elem in canals_plus:
+            st.markdown(f"""### Возможные каналы в недостатке при застое в {elem}:""")
+            st.markdown(f"""по стволам: {get_Ke(stvoly_Ke, elem)}""")    
+            st.markdown(f"""по ветвям: {get_Ke(vetvi_Ke, elem)}""")        
+            st.markdown(f"""по y-син: {u_sin_Ke[elem]}""")        
+            st.markdown(f"""внутри дома: {home_Ke[elem]}""")        
+            
+            if type(u_sin_Ke[elem]) == type(list()):
+                y.append(get_Ke(stvoly_Ke, elem), get_Ke(vetvi_Ke, elem), u_sin_Ke[elem][0], u_sin_Ke[elem][1], home_Ke[elem])
+            else:
+                y.append(get_Ke(stvoly_Ke, elem), get_Ke(vetvi_Ke, elem), u_sin_Ke[elem], home_Ke[elem])
 
         st.markdown("""### Выбор точек питания по У-СИН (перечисление по мере снижения эффективности):""")
         canals = []
@@ -197,7 +201,7 @@ if date:
 
     # Для канала в недостатке:
     minus = st.text_input('Введите канал в недостатке', '')
-    
+    minus = minus.capitalize()
     if minus:
         st.markdown("""### Выбор точек питания по У-СИН (перечисление по мере снижения эффективности):""")
         
