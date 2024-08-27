@@ -142,9 +142,13 @@ if date:
     #Выводим DataFrame в интерфейсе
     st.dataframe(df)
 
-    # Вводим канал в застое:
+    ################################### Вводим канал в застое:
     plus = st.text_input('Введите канал в застое', '')
-    canals_plus = re.sub('[:,/.;#$%^&]', ' ', plus).split()
+    canals_p = re.sub('[:,/.;#$%^&]', ' ', plus).split()
+    canals_plus = []
+    for c in canals_p:
+        canals_plus.append(c.capitalize())
+                
     if canals_plus:
         y = []
         for elem in canals_plus:
@@ -153,12 +157,17 @@ if date:
             st.markdown(f"""по ветвям: {get_Ke(vetvi_Ke, elem)}""")        
             st.markdown(f"""по y-син: {u_sin_Ke[elem]}""")        
             st.markdown(f"""внутри дома: {home_Ke[elem]}""")        
+            y.append(get_Ke(stvoly_Ke, elem))
+            y.append(get_Ke(vetvi_Ke, elem))
             
             if type(u_sin_Ke[elem]) == type(list()):
-                y.append(get_Ke(stvoly_Ke, elem), get_Ke(vetvi_Ke, elem), u_sin_Ke[elem][0], u_sin_Ke[elem][1], home_Ke[elem])
+                y.append(u_sin_Ke[elem][0])
+                y.append(u_sin_Ke[elem][1])
+                y.append(home_Ke[elem])
             else:
-                y.append(get_Ke(stvoly_Ke, elem), get_Ke(vetvi_Ke, elem), u_sin_Ke[elem], home_Ke[elem])
-
+                y.append(u_sin_Ke[elem])
+                y.append(home_Ke[elem])
+        
         st.markdown("""### Выбор точек питания по У-СИН (перечисление по мере снижения эффективности):""")
         canals = []
 
@@ -179,16 +188,13 @@ if date:
             except:
                 df_2.loc[df_2.index[1], el] = f'{u_sin_pitanie[el]}{qi.loc[u_sin.loc[u_sin_pitanie[el], "Стихия"], u_sin_pitanie[el]]}'
 
-            
+            celll = " "
             cell = " "
             for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[el, "Стихия"]]].index.to_list():
                 cell+=(f'{c}{qi.loc[stihiya[season_qi.loc[el, "Стихия"]], c]}, ')
+                celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[el, "Стихия"]]], c]}, ')  
                 canals.append(c)
             df_2.loc[df_2.index[2], el] = cell
-
-            celll = " "
-            for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[el, "Стихия"]]].index.to_list():
-                celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[el, "Стихия"]]], c]}, ')  
             df_2.loc[df_2.index[3], el] = celll 
 
         #Выводим DataFrame в интерфейсе
@@ -199,40 +205,45 @@ if date:
         st.markdown(f"""Предпочтительно использовать: {set(canals) & df.loc["Zang Fu Xu", "Используем"]}""")  
 
 
-    # Для канала в недостатке:
+    ###################### Для канала в недостатке:
     minus = st.text_input('Введите канал в недостатке', '')
-    minus = minus.capitalize()
-    if minus:
+    canals_p = re.sub('[:,/.;#$%^&]', ' ', minus).split()
+    canals_minus = []
+    for c in canals_p:
+        canals_minus.append(c.capitalize())
+
+    if canals_minus:
         st.markdown("""### Выбор точек питания по У-СИН (перечисление по мере снижения эффективности):""")
         
         df_2 = pd.DataFrame(
-            columns=[minus],
+            columns=canals_minus,
             index=["Точка трансформации", "Точка качества дома", "Точка сезонной ци", "Точки трансформации сезонной ци"]
         )
         
         canals = []
-        canals.append(u_sin_pitanie[minus])
-        try:
-            df_2.loc[df_2.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
-        except:
-            df_2.loc[df_2.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"], u_sin_pitanie[minus]]}'
-        
-        try:
-            df_2.loc[df_2.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
-        except:
-            df_2.loc[df_2.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"], u_sin_pitanie[minus]]}'
+        for minus in canals_minus:
+            canals.append(u_sin_pitanie[minus])
+            try:
+                df_2.loc[df_2.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
+            except:
+                df_2.loc[df_2.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"], u_sin_pitanie[minus]]}'
+            
+            try:
+                df_2.loc[df_2.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
+            except:
+                df_2.loc[df_2.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"], u_sin_pitanie[minus]]}'
 
-        
-        cell = " "
-        for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
-            cell+=(f'{c}{qi.loc[stihiya[season_qi.loc[minus, "Стихия"]], c]}, ')
-            canals.append(c)
-        df_2.loc[df_2.index[2], minus] = cell
+            
+            cell = " "
+            for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
+                cell+=(f'{c}{qi.loc[stihiya[season_qi.loc[minus, "Стихия"]], c]}, ')
+                canals.append(c)
+            df_2.loc[df_2.index[2], minus] = cell
 
-        celll = " "
-        for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
-            celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[minus, "Стихия"]]], c]}, ')  
-        df_2.loc[df_2.index[3], minus] = celll 
+            celll = " "
+            for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
+                celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[minus, "Стихия"]]], c]}, ')  
+            df_2.loc[df_2.index[3], minus] = celll 
 
         #Выводим DataFrame в интерфейсе
         st.dataframe(df_2)    
