@@ -54,10 +54,10 @@ u_sin_Ke = {'Hg': 'Bl',
             'Sp':'Gb'}
 home_Ke = {'Liv': 'Gb',
             'Gb': 'Liv',
-            'Ht': 'Si',
-            'Si': 'Ht',
-            'Hg': 'Th',
-            'Th': 'Hg',
+            'Ht': ['Si', 'Th'],
+            'Si': ['Ht', 'Hg'],
+            'Hg': ['Si', 'Th'],
+            'Th': ['Ht', 'Hg'],
             'Sp': 'St',
             'St': 'Sp',
             'Lu': 'Co',
@@ -163,12 +163,19 @@ if date:
             if type(u_sin_Ke[elem]) == type(list()):
                 y.append(u_sin_Ke[elem][0])
                 y.append(u_sin_Ke[elem][1])
-                y.append(home_Ke[elem])
             else:
                 y.append(u_sin_Ke[elem])
+                
+            if type(home_Ke[elem]) == type(list()):    
+                y.append(home_Ke[elem][0])
+                y.append(home_Ke[elem][1])
+            else:
                 y.append(home_Ke[elem])
+        y = [x for x in y if x is not None]
+
+        st.markdown(f"""##### **Каналы $Ке$ для {canals_plus}**: {y}""")
         
-        st.markdown("""### Выбор точек питания по У-СИН (перечисление по мере снижения эффективности):""")
+        st.markdown("""### Выбор точек питания (перечисление по мере снижения эффективности):""")
         canals = []
 
         df_2 = pd.DataFrame(
@@ -200,7 +207,7 @@ if date:
         #Выводим DataFrame в интерфейсе
         st.dataframe(df_2)    
         
-        st.markdown(f"""Возможные каналы для питания недостатка: {canals}""")  
+        st.markdown(f"""Возможные каналы для питания: {canals}""")  
         st.markdown(f"""Из них конфликтуют с запрещёнными: {set(canals) & set(df["Не используем"])}""")
         st.markdown(f"""Предпочтительно использовать: {set(canals) & df.loc["Zang Fu Xu", "Используем"]}""")  
 
@@ -213,7 +220,7 @@ if date:
         canals_minus.append(c.capitalize())
 
     if canals_minus:
-        st.markdown("""### Выбор точек питания по У-СИН (перечисление по мере снижения эффективности):""")
+        st.markdown("""### Выбор точек питания (перечисление по мере снижения эффективности):""")
         
         df_2 = pd.DataFrame(
             columns=canals_minus,
@@ -248,6 +255,17 @@ if date:
         #Выводим DataFrame в интерфейсе
         st.dataframe(df_2)    
 
-        st.markdown(f"""Возможные каналы для питания недостатка: {canals}""")  
+        st.markdown(f"""##### **Возможные каналы для питания:** {canals}""")  
         st.markdown(f"""Из них конфликтуют с запрещёнными: {set(canals) & set(df["Не используем"])}""")
-        st.markdown(f"""Предпочтительно использовать: {set(canals) & df.loc["Zang Fu Xu", "Используем"]}""")  
+        st.markdown(f"""Предпочтительно использовать: {df.loc[:, "Используем"].to_list()}""")  
+
+        use = set([df.loc['Ствол', 'Используем'], df.loc['Ветвь', 'Используем']])
+        for u in df.loc['Zang Fu Xu', 'Используем']:
+            use.add(u)
+        
+        st.markdown(f"""use {use}""")
+        # resume = 
+        
+        # st.markdown(f"""## **Resume** 
+                    
+        #             {canals}""")
