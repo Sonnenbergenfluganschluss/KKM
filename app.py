@@ -93,6 +93,17 @@ sec_step = {1: 27,
             11: 23,
             12: 25}
 
+
+man = ["Liv1", "Liv4", "Liv3", "Liv3, Gb37", "Liv5, Gb40", "Liv2", "Liv8", 
+       "Kid1", "Kid7", "Kid3", "Kid3, Bl58", "Kid4, Bl64", "Kid2", "Kid10", 
+       "Lu11", "Lu8", "Lu9", "Lu9, Co6", "Lu7, Co4", "Lu10", "Lu5", 
+       "Hg9, Ht9", "Hg5, Ht4", "Hg7, Ht7", "Hg7, Ht7, Si7", "Hg6, Ht5, Si4", "Hg8, Ht8", "Hg3, Ht3"]
+
+woman = ["Gb41", "Gb44", "Gb34", "Gb37, Liv3", "Gb40, Liv5", "Gb38", "Gb43", 
+       "Bl65", "Bl67", "Bl40", "Kid3, Bl58", "Kid4, Bl64", "Bl60", "Bl66", 
+       "Co3", "Co1", "Co11", "Lu9, Co6", "Lu7, Co4", "Co5", "Co2", 
+       "Si3", "Si1", "Si8", "Hg7, Ht7, Si7", "Ht5, Si4", "Si5", "Si2"]
+
 ######################################  Составление карты пациента  ##########################################
 
 
@@ -154,7 +165,7 @@ st.markdown(
 # Вводим пол пациента
 sex = st.selectbox(
     "Выберете пол пациента",
-    ("Мужчина", "Женщина"),
+    ("", "Мужчина", "Женщина"),
 )
 
 # Вводим дату рождения
@@ -186,6 +197,8 @@ if date:
     
     if df.loc["Zang Fu Xu", "Используем"] == None:
         Zang_Fu_Xu = set()
+    else:
+        Zang_Fu_Xu = set(df.loc["Zang Fu Xu", "Используем"])
         
         
     # Выводим DataFrame в интерфейсе
@@ -198,134 +211,185 @@ if date:
     neutral = set(u_sin_pitanie.keys()) ^ (set([df.loc['Ствол', 'Не используем'], 
                                             df.loc['Ветвь', 'Не используем']]) |  
                                         set([df.loc['Ствол', 'Используем'], 
-                                            df.loc['Ветвь', 'Используем']]))
+                                            df.loc['Ветвь', 'Используем']]) |
+                                            Zang_Fu_Xu)
                                             
-    st.markdown(f"""Нейтральные каналы: {neutral}:""")
+    st.markdown(f"""Нейтральные каналы: {', '.join(list(neutral))}:""")
+    st.markdown("""--------------------------------------------------""")
+
     
     
-    
+    ###################################   Выбираем метод лечения:   ##########################################
+
+
+    method = st.selectbox(
+    "Выберете метод лечения",
+    (" ", "Питание и Ке", "Лунные дворцы", "Травма"))
     
 
     ###################################   Вводим канал в застое:    ###########################################
-    
-    
-    
-    
-    plus = st.text_input('Введите канал в застое', '')
-    canals_p = re.sub('[:,/.;#$%^&]', ' ', plus).split()
-    canals_plus = []
-    for c in canals_p:
-        canals_plus.append(c.capitalize())
+        
+        
+        
+    if method=="Питание и Ке":    
+        plus = st.text_input('Введите канал в застое', '')
+        canals_p = re.sub('[:,/.;#$%^&]', ' ', plus).split()
+        canals_plus = []
+        for c in canals_p:
+            canals_plus.append(c.capitalize())
+                    
+        if canals_plus:
+            y = []
+            for elem in canals_plus:
+                st.markdown(f"""### Возможные каналы в недостатке при застое в {elem}:""")
+            
+                df_n = pd.DataFrame(
+                    {"Канал":[get_Ke(stvoly_Ke, elem), 
+                            get_Ke(vetvi_Ke, elem),
+                            u_sin_Ke[elem],
+                            home_Ke[elem]]}, 
+                    index=["по стволам", "по ветвям", "по у-син", "внутри дома"]
+                )
                 
-    if canals_plus:
-        y = []
-        for elem in canals_plus:
-            st.markdown(f"""### Возможные каналы в недостатке при застое в {elem}:""")
-           
-            df_n = pd.DataFrame(
-                {"Канал":[get_Ke(stvoly_Ke, elem), 
-                          get_Ke(vetvi_Ke, elem),
-                          u_sin_Ke[elem],
-                          home_Ke[elem]]}, 
-                index=["по стволам", "по ветвям", "по у-син", "внутри дома"]
+                st.dataframe(df_n)
+                
+                y.append(get_Ke(stvoly_Ke, elem))
+                y.append(get_Ke(vetvi_Ke, elem))
+                
+                if type(u_sin_Ke[elem]) == type(list()):
+                    y.append(u_sin_Ke[elem][0])
+                    y.append(u_sin_Ke[elem][1])
+                else:
+                    y.append(u_sin_Ke[elem])
+                    
+                if type(home_Ke[elem]) == type(list()):    
+                    y.append(home_Ke[elem][0])
+                    y.append(home_Ke[elem][1])
+                else:
+                    y.append(home_Ke[elem])
+                    
+            y = [x for x in y if x is not None]
+
+            ke_channels = set(y)
+            st.markdown(f"""Каналы *$Ке$* для {', '.join(list(canals_plus))} : **{', '.join(list(ke_channels))}**""")
+
+
+
+        ###################################   Для канала в недостатке:  ########################################
+        
+        
+        
+        
+        minus = st.text_input('Введите канал в недостатке', '')
+        canals_p = re.sub('[:,/.;#$%^&]', ' ', minus).split()
+        canals_minus = []
+        for c in canals_p:
+            canals_minus.append(c.capitalize())
+
+        if canals_minus:
+            st.markdown("""### Выбор точек питания (перечисление по мере снижения эффективности):""")
+            
+            df_3 = pd.DataFrame(
+                columns=canals_minus,
+                index=["Точка трансформации", "Точка качества дома", "Точка сезонной ци", "Точки трансформации \nсезонной ци"]
             )
             
-            st.dataframe(df_n)
+            channels = []
+            for minus in canals_minus:
+                channels.append(u_sin_pitanie[minus])
+                try:
+                    df_3.loc[df_3.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
+                except:
+                    df_3.loc[df_3.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"], u_sin_pitanie[minus]]}'
+                
+                try:
+                    df_3.loc[df_3.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
+                except:
+                    df_3.loc[df_3.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"], u_sin_pitanie[minus]]}'
+
+                
+                cell = " "
+                for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
+                    cell+=(f'{c}{qi.loc[stihiya[season_qi.loc[minus, "Стихия"]], c]}, ')
+                    channels.append(c)
+                df_3.loc[df_3.index[2], minus] = cell
+
+                celll = " "
+                for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
+                    celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[minus, "Стихия"]]], c]}, ')  
+                df_3.loc[df_3.index[3], minus] = celll 
+
+            #Выводим DataFrame в интерфейсе
+            st.dataframe(df_3)    
+
+            st.markdown(f"""Возможные каналы для питания: **{', '.join(list(set(channels)))}**""")  
             
-            y.append(get_Ke(stvoly_Ke, elem))
-            y.append(get_Ke(vetvi_Ke, elem))
             
-            if type(u_sin_Ke[elem]) == type(list()):
-                y.append(u_sin_Ke[elem][0])
-                y.append(u_sin_Ke[elem][1])
+            dnt_use = set([df.loc['Ствол', 'Не используем'], df.loc['Ветвь', 'Не используем']]) | set(canals_minus) | set(canals_plus)
+
+            if (set(channels) & dnt_use):
+                st.markdown(f"""!!!  Конфликт с запрещёнными каналами: **{', '.join(list(set(channels) & dnt_use))}** !!!""")
             else:
-                y.append(u_sin_Ke[elem])
-                
-            if type(home_Ke[elem]) == type(list()):    
-                y.append(home_Ke[elem][0])
-                y.append(home_Ke[elem][1])
+                st.markdown("""Конфликт с запрещёнными каналами: Конфликта нет""")
+
+            
+            one_spine = set(channels) & ke_channels
+            if one_spine:
+                st.markdown(f"""Одновременно питание недостатка и Ке на застой: **{', '.join(list(one_spine))}**""")  
+                st.markdown(f"""Подходящие точки в порядке снижения эффективности:""")
+                points = []
+                for i in df_3.columns:
+                    point = ", ".join(df_3[i].to_list())
+                    needed_points = re.findall(list(one_spine)[0]+"\d+", point)
+                    
+                    st.markdown(f"""**{', '.join(list(needed_points))}**""")
             else:
-                y.append(home_Ke[elem])
-                
-        y = [x for x in y if x is not None]
-
-        ke_channels = set(y)
-        st.markdown(f"""##### **Каналы $Ке$ для {canals_plus}**: {ke_channels}""")
-
-
-
-
-    ###################################   Для канала в недостатке:  ########################################
-    
-    
-    
-    
-    minus = st.text_input('Введите канал в недостатке', '')
-    canals_p = re.sub('[:,/.;#$%^&]', ' ', minus).split()
-    canals_minus = []
-    for c in canals_p:
-        canals_minus.append(c.capitalize())
-
-    if canals_minus:
-        st.markdown("""### Выбор точек питания (перечисление по мере снижения эффективности):""")
-        
-        df_3 = pd.DataFrame(
-            columns=canals_minus,
-            index=["Точка трансформации", "Точка качества дома", "Точка сезонной ци", "Точки трансформации \nсезонной ци"]
-        )
-        
-        channels = []
-        for minus in canals_minus:
-            channels.append(u_sin_pitanie[minus])
-            try:
-                df_3.loc[df_3.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
-            except:
-                df_3.loc[df_3.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"], u_sin_pitanie[minus]]}'
+                st.markdown(f"""*Одной иглой питание недостатка и Ке на застой не получится, - нет пересекающихся каналов*""")  
             
-            try:
-                df_3.loc[df_3.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
-            except:
-                df_3.loc[df_3.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"], u_sin_pitanie[minus]]}'
 
             
-            cell = " "
-            for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
-                cell+=(f'{c}{qi.loc[stihiya[season_qi.loc[minus, "Стихия"]], c]}, ')
-                channels.append(c)
-            df_3.loc[df_3.index[2], minus] = cell
+            st.markdown("""--------------------------------------------------""")
 
-            celll = " "
-            for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
-                celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[minus, "Стихия"]]], c]}, ')  
-            df_3.loc[df_3.index[3], minus] = celll 
 
-        #Выводим DataFrame в интерфейсе
-        st.dataframe(df_3)    
 
-        st.markdown(f"""##### **Возможные каналы для питания:** {set(channels)}""")  
-        
-        
-        dnt_use = set([df.loc['Ствол', 'Не используем'], df.loc['Ветвь', 'Не используем']]) | set(canals_minus) | set(canals_plus)
+####################################   Лунные дворцы    ############################################
 
-        if (set(channels) & dnt_use):
-            st.markdown(f"""#### **!!!  Конфликт с запрещёнными:** {set(channels) & set(df["Не используем"])}""")
-        else:
-            st.markdown("""##### Конфликт с запрещёнными каналами: Конфликта нет""")
 
-        
-        one_spine = set(channels) & ke_channels
-        if one_spine:
-            st.markdown(f"""##### **Одновременно питание недостатка и Ке на застой:** {one_spine}""")  
-            st.markdown(f"""##### **Подходящие точки в порядке снижения эффективности:**""")
-            points = []
-            for i in df_3.columns:
-                point = ", ".join(df_3[i].to_list())
-                needed_points = re.findall(list(one_spine)[0]+"\d+", point)
-                
-                st.markdown(f"""{needed_points}""")
-        else:
-            st.markdown(f"""#### *Одной иглой питание недостатка и Ке на застой не получится, - нет пересекающихся каналов*""")  
-        
 
-        
-        st.markdown("""--------------------------------------------------""")
+    if method=="Лунные дворцы":
+        date = st.text_input('Введите дату события', '')
+        if date:
+            try:
+                date = str(pd.to_datetime(date, dayfirst=True)).split()[0] #input("Введите дату рождения")
+                year = int(date[:4])
+                month = int(date[5:7])
+                day = int(date[8:])
+                st.markdown(f'Дата события: **{date}**')
+            except:
+                st.markdown("*Некорректная дата. Попробуйте снова*")
+
+            for k, v in moon_palace.items():
+                if year in v:
+                    first_step = k
+
+            lunar_day = first_step + sec_step[month]+ day
+
+            while lunar_day > 28:
+                lunar_day+=-28
+            st.markdown(f"Лунный день по дате события: **{lunar_day}**")
+            
+            
+            if sex == "Мужчина":
+                points = man[lunar_day-1]
+                st.markdown(f"##### Точки по лунным дворцам: \t{man[lunar_day-1]}")
+            else:
+                points = woman[lunar_day-1]
+                st.markdown(f"##### Точки по лунным дворцам: \t{woman[lunar_day-1]}")
+
+            points = points.split(', ')
+            for el in points:
+                elem = re.match("\D*", el)[0]
+                if elem in dnt_use:
+                    st.markdown(f"Точку **{el}** использовать нельзя!!!")
+
+            
