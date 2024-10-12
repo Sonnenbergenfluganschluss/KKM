@@ -19,9 +19,10 @@ def read_files():
     stvoly = pd.read_excel("stvoly.xlsx", index_col="year")
     vetvi = pd.read_excel("vetvi.xlsx", index_col="year")
     sloy = pd.read_excel("sloy.xlsx", index_col="year")
-    return polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy
+    table = pd.read_csv("table.csv", index_col='Орган')
+    return polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table
 
-polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy = read_files()
+polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table = read_files()
 
 
 
@@ -64,6 +65,10 @@ home_Ke = {'Liv': 'Gb',
             'Co': 'Lu',
             'Kid': 'Bl',
             'Bl': 'Kid'}
+
+vis_yaer = [1920, 1924, 1928, 1932, 1936, 1940, 1944, 1948, 1952, 1956, 1960, 1964, 1968, 
+            1972, 1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008, 2012, 2016, 2020, 
+            2024, 2028, 2032, 2036, 2040, 2044, 2048, 2052]
 
 moon_palace = dict({1: [1920, 1942, 0, 1987, 2009, 2032], 2: [0, 1943, 1965, 1988, 2010, 0], 
     3: [1921, 1944, 1966, 0, 2011, 2033], 4: [1922, 0, 1967, 1989, 2012, 2034], 
@@ -175,7 +180,7 @@ if date:
         birthday = str(pd.to_datetime(date, dayfirst=True)).split()[0] #input("Введите дату рождения")
         st.markdown(f'Дата рождения: {birthday}')
     except:
-        st.markdown("Некорректная дата. Попробуйте снова")
+        st.error("Некорректная дата. Попробуйте снова")
 
     # Получаем год и полугодие по китайскому календарю
     year = int(birthday[:4])
@@ -236,7 +241,11 @@ if date:
         canals_p = re.sub('[:,/.;#$%^&]', ' ', plus).split()
         canals_plus = []
         for c in canals_p:
-            canals_plus.append(c.capitalize())
+            if c.capitalize() in u_sin_pitanie.keys():
+                canals_plus.append(c.capitalize())
+            else:
+                st.error(f"""*Название канала '{c.capitalize()}' введено неверно. Попробуйте снова!*""")
+                break
                     
         if canals_plus:
             y = []
@@ -284,7 +293,11 @@ if date:
         canals_p = re.sub('[:,/.;#$%^&]', ' ', minus).split()
         canals_minus = []
         for c in canals_p:
-            canals_minus.append(c.capitalize())
+            if c.capitalize() in u_sin_pitanie.keys():
+                canals_minus.append(c.capitalize())
+            else:
+                st.error(f"""*Название канала '{c.capitalize()}' введено неверно. Попробуйте снова!*""")
+                break
 
         if canals_minus:
             st.markdown("""### Выбор точек питания (перечисление по мере снижения эффективности):""")
@@ -328,26 +341,60 @@ if date:
             dnt_use = set([df.loc['Ствол', 'Не используем'], df.loc['Ветвь', 'Не используем']]) | set(canals_minus) | set(canals_plus)
 
             if (set(channels) & dnt_use):
-                st.markdown(f"""!!!  Конфликт с запрещёнными каналами: **{', '.join(list(set(channels) & dnt_use))}** !!!""")
+                st.warning(f"""!!!  Конфликт с запрещёнными каналами: **{', '.join(list(set(channels) & dnt_use))}** !!!""")
             else:
-                st.markdown("""Конфликт с запрещёнными каналами: Конфликта нет""")
+                st.markdown("""Конфликт с запрещёнными каналами: *Конфликта нет*""")
 
             
-            one_spine = set(channels) & ke_channels
+            one_spine = []
+            for n in list((set(channels) & ke_channels)):
+                if (n not in dnt_use):
+                    one_spine.append(n)
+
             if one_spine:
-                st.markdown(f"""Одновременно питание недостатка и Ке на застой: **{', '.join(list(one_spine))}**""")  
+                st.markdown(f"""Одновременно питание недостатка и Ке на застой: **{', '.join(one_spine)}**""")  
                 st.markdown(f"""Подходящие точки в порядке снижения эффективности:""")
                 points = []
                 for i in df_3.columns:
                     point = ", ".join(df_3[i].to_list())
                     needed_points = re.findall(list(one_spine)[0]+"\d+", point)
-                    
+                    try:
+                        from PIL import Image
+                        image = Image.open(f"data\{needed_points[0]}.jpg")
+                        st.image(image, width=300)
+                    except: 
+                        print("")                   
                     st.markdown(f"""**{', '.join(list(needed_points))}**""")
             else:
                 st.markdown(f"""*Одной иглой питание недостатка и Ке на застой не получится, - нет пересекающихся каналов*""")  
             
+                second_spine = []
+                for n in list(set(channels)):
+                    if (n in use) & (n not in dnt_use):
+                        second_spine.append(n)
 
+                if second_spine:
+                    # st.markdown(f"""Точки питания, рекомендованные по карте: **{', '.join(second_spine)}**""")  
+                    st.markdown(f"""Подходящие точки рекомендованных каналов для питания в порядке снижения эффективности:""")
+                    points = []
+                    for i in df_3.columns:
+                        point = ", ".join(df_3[i].to_list())
+                        needed_points = re.findall(second_spine[0]+"\d+", point)
+                        
+                        st.markdown(f"""**{', '.join(list(needed_points))}**""")
+                        
+                else:
+                    st.markdown(f"""*Подходящих точек не найдено :(*""") 
+
+                for channal in canals_plus:
+                    st.markdown(f"""Застой в канале {channal} корректируем техникой 'тяни-толкай', точка:""")
+                    st.markdown(f"""**{table.loc[channal, 'Jing_Jin']}**""")
             
+                    from PIL import Image
+                    image = Image.open(f"data\{table.loc[channal, 'Jing_Jin']}.jpg")
+                    st.image(image, width=400)
+
+
             st.markdown("""--------------------------------------------------""")
 
 
@@ -366,11 +413,14 @@ if date:
                 day = int(date[8:])
                 st.markdown(f'Дата события: **{date}**')
             except:
-                st.markdown("*Некорректная дата. Попробуйте снова*")
+                st.error("*Некорректная дата. Попробуйте снова*")
 
             for k, v in moon_palace.items():
                 if year in v:
                     first_step = k
+
+            if (year in vis_yaer) & (pd.to_datetime(date) > pd.to_datetime(f"{year}-02-28")):
+                first_step = first_step+1
 
             lunar_day = first_step + sec_step[month]+ day
 
@@ -378,18 +428,24 @@ if date:
                 lunar_day+=-28
             st.markdown(f"Лунный день по дате события: **{lunar_day}**")
             
+            if lunar_day in range(1, 15):
+                lunar_day = lunar_day+14
+            else:
+                lunar_day = lunar_day-14
+            
             
             if sex == "Мужчина":
                 points = man[lunar_day-1]
-                st.markdown(f"##### Точки по лунным дворцам: \t{man[lunar_day-1]}")
+                st.markdown(f"##### Точки по лунным дворцам: \t{points}")
+            
             else:
                 points = woman[lunar_day-1]
-                st.markdown(f"##### Точки по лунным дворцам: \t{woman[lunar_day-1]}")
+                st.markdown(f"##### Точки по лунным дворцам: \t{points}")
 
             points = points.split(', ')
             for el in points:
                 elem = re.match("\D*", el)[0]
                 if elem in dnt_use:
-                    st.markdown(f"Точку **{el}** использовать нельзя!!!")
+                    st.warning(f"Точку **{el}** использовать нельзя!!!")
 
             
