@@ -427,12 +427,17 @@ if date:
             while lunar_day > 28:
                 lunar_day+=-28
             st.markdown(f"Лунный день по дате события: **{lunar_day}**")
+            st.markdown(f"Янские точки дня: \t**{woman[lunar_day-1]}**")
+            st.markdown(f"Иньские точки дня: \t**{man[lunar_day-1]}**")
+            
             
             if lunar_day in range(1, 15):
                 lunar_day = lunar_day+14
             else:
                 lunar_day = lunar_day-14
             
+            
+            text_ld = ""
             
             if sex == "Мужчина":
                 points = man[lunar_day-1]
