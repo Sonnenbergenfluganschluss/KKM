@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from PIL import Image
 import re
 
 @st.cache_data
@@ -390,8 +391,8 @@ if date:
                     st.markdown(f"""Застой в канале {channal} корректируем техникой 'тяни-толкай', точка:""")
                     st.markdown(f"""**{table.loc[channal, 'Jing_Jin']}**""")
             
-                    from PIL import Image
-                    image = Image.open(f"data\{table.loc[channal, 'Jing_Jin']}.jpg")
+                    image_path = f"data\{table.loc[channal, 'Jing_Jin']}.jpg"
+                    image = Image.open(image_path)
                     st.image(image, width=400)
 
 
@@ -404,6 +405,10 @@ if date:
 
 
     if method=="Лунные дворцы":
+        image_path = "data\Лунные дворцы.jpg"
+        image = Image.open(image_path)
+        st.image(image, width=600)
+        
         date = st.text_input('Введите дату события', '')
         if date:
             try:
@@ -452,5 +457,12 @@ if date:
                 elem = re.match("\D*", el)[0]
                 if elem in dnt_use:
                     st.warning(f"Точку **{el}** использовать нельзя!!!")
+
+            pp = st.text_input("Введите выбранные точки через запятую", "")
+            pp = pp.split(",")
+            for p in pp:
+                image_path = f"data\{p}.jpg"
+                image = Image.open(image_path)
+                st.image(image, width=300)
 
             
