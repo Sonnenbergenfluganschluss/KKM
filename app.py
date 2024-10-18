@@ -452,6 +452,8 @@ if date:
                 points = woman[lunar_day-1]
                 st.markdown(f"##### Точки по лунным дворцам: \t{points}")
 
+            
+            
             points = points.split(', ')
             for el in points:
                 elem = re.match("\D*", el)[0]
@@ -459,10 +461,11 @@ if date:
                     st.warning(f"Точку **{el}** использовать нельзя!!!")
 
             pp = st.text_input("Введите выбранные точки через запятую", "")
-            pp = pp.split(",")
-            for p in pp:
-                image_path = f"data\{p}.jpg"
-                image = Image.open(image_path)
-                st.image(image, width=300)
+            if pp:
+                pp = pp.split(",")
+                for p in pp:
+                    image_path = f"data\{p}.jpg"
+                    image = Image.open(image_path)
+                    st.image(image, width=300)
 
             
