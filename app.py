@@ -413,7 +413,7 @@ if date:
 
 
     if method=="Лунные дворцы":
-        image_path = "data\Лунные дворцы.jpg"
+        image_path = "data/Лунные дворцы.jpg"
         image = Image.open(image_path)
         st.image(image, width=600)
         
