@@ -393,7 +393,15 @@ if date:
             
                     image_path = f"data/{table.loc[channal, 'Jing_Jin']}.jpg"
                     image = Image.open(image_path)
-                    st.image(image, width=400)
+                    st.image(image, width=300)
+
+                    pp = st.text_input("Введите выбранные точки через запятую", "")
+                    if pp:
+                        pp = pp.split(",")
+                        for p in pp:
+                            image_path = f"data/{p}.jpg"
+                            image = Image.open(image_path)
+                            st.image(image, width=300)
 
 
             st.markdown("""--------------------------------------------------""")
@@ -460,12 +468,14 @@ if date:
                 if elem in dnt_use:
                     st.warning(f"Точку **{el}** использовать нельзя!!!")
 
-            pp = st.text_input("Введите выбранные точки через запятую", "")
-            if pp:
-                pp = pp.split(",")
-                for p in pp:
-                    image_path = f"data\{p}.jpg"
-                    image = Image.open(image_path)
-                    st.image(image, width=300)
+            
+    pp = st.text_input("Введите выбранные точки через запятую", "")
+    if pp:
+        pp = pp.split(",")
+        for p in pp:
+            p = p.capitalize()
+            image_path = f"data/{p}.jpg"
+            image = Image.open(image_path)
+            st.image(image, width=300)
 
             
