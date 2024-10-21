@@ -391,7 +391,7 @@ if date:
                     st.markdown(f"""Застой в канале {channal} корректируем техникой 'тяни-толкай', точка:""")
                     st.markdown(f"""**{table.loc[channal, 'Jing_Jin']}**""")
             
-                    image_path = f"data\{table.loc[channal, 'Jing_Jin']}.jpg"
+                    image_path = f"data/{table.loc[channal, 'Jing_Jin']}.jpg"
                     image = Image.open(image_path)
                     st.image(image, width=400)
 
