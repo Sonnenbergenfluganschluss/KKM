@@ -478,7 +478,7 @@ if date:
     if pp:
         pp = pp.split(",")
         for p in pp:
-            p = p.capitalize()
+            p = p.strip().capitalize()
             image_path = f"data/{p}.jpg"
             image = Image.open(image_path)
             st.image(image, width=300)
