@@ -13,14 +13,17 @@ def get_Ke(d, value):
             return v
 
 def read_files():       
-    polugodie = pd.read_excel("Полугодия.xlsx", index_col="year")
-    u_sin = pd.read_excel("У-син.xlsx", index_col="Орган")
-    season_qi = pd.read_excel("season_qi.xlsx", index_col="Орган")
-    qi = pd.read_excel("qi.xlsx", index_col="Стихия")
-    stvoly = pd.read_excel("stvoly.xlsx", index_col="year")
-    vetvi = pd.read_excel("vetvi.xlsx", index_col="year")
-    sloy = pd.read_excel("sloy.xlsx", index_col="year")
+    polugodie = pd.read_csv("Полугодия.csv", index_col="year")
+    u_sin = pd.read_csv("У-син.csv", index_col="Орган")
+    season_qi = pd.read_csv("season_qi.csv", index_col="Орган")
+    qi = pd.read_csv("qi.csv", index_col="Стихия")
+    stvoly = pd.read_csv("stvoly.csv", index_col="year")
+    vetvi = pd.read_csv("vetvi.csv", index_col="year")
+    sloy = pd.read_csv("sloy.csv", index_col="year")
     table = pd.read_csv("table.csv", index_col='Орган')
+    # tochki_pitanie = pd.read_csv("tochki_pitanie.csv", index_col='Орган').drop('Unnamed: 0', axis=1)
+    # channels_Ke = pd.read_csv("channels_Ke.csv", index_col=0)
+    # points = pd.read_csv("points.csv", index_col=0)
     return polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table
 
 polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table = read_files()
