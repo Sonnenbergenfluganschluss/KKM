@@ -305,7 +305,7 @@ if date:
             
             df_3 = pd.DataFrame(
                 columns=canals_minus,
-                index=["Точка трансформации", "Точка качества дома", "Точка сезонной ци", "Точки трансформации \nсезонной ци"]
+                index=["Точка трансформации", "Точка качества дома", "Точка сезонной ци", "Точки трансформации \nсезонной ци", "Luo точка"]
             )
             
             channels = []
@@ -332,6 +332,8 @@ if date:
                 for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
                     celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[minus, "Стихия"]]], c]}, ')  
                 df_3.loc[df_3.index[3], minus] = celll 
+
+                df_3.loc[df_3.index[4], minus] = table.loc[home_Ke['Lu'], 'Luo']
 
             #Выводим DataFrame в интерфейсе
             st.dataframe(df_3)    
@@ -395,13 +397,13 @@ if date:
                     image = Image.open(image_path)
                     st.image(image, width=300)
 
-                    pp = st.text_input("Введите выбранные точки через запятую", "")
-                    if pp:
-                        pp = pp.split(",")
-                        for p in pp:
-                            image_path = f"data/{p}.jpg"
-                            image = Image.open(image_path)
-                            st.image(image, width=300)
+                    # pp = st.text_input("Введите выбранные точки через запятую", "")
+                    # if pp:
+                    #     pp = pp.split(",")
+                    #     for p in pp:
+                    #         image_path = f"data/{p}.jpg"
+                    #         image = Image.open(image_path)
+                    #         st.image(image, width=300)
 
 
             st.markdown("""--------------------------------------------------""")
