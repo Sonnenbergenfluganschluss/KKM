@@ -284,7 +284,7 @@ if date:
             y = [x for x in y if x is not None]
 
             ke_channels = set(y)
-            st.markdown(f"""Каналы *$Ке$* для {', '.join(list(canals_plus))} : **{', '.join(list(ke_channels))}**""")
+            st.markdown(f"""Каналы *$Ке$* для {', '.join(list(canals_plus))} : :blue[**{', '.join(list(ke_channels))}**]""")
 
 
 
@@ -347,9 +347,9 @@ if date:
             dnt_use = set([df.loc['Ствол', 'Не используем'], df.loc['Ветвь', 'Не используем']]) | set(canals_minus) | set(canals_plus)
 
             if (set(channels) & dnt_use):
-                st.warning(f"""!!!  Конфликт с запрещёнными каналами: **{', '.join(list(set(channels) & dnt_use))}** !!!""")
+                st.warning(f""":red[!!!  Конфликт с запрещёнными каналами: **{', '.join(list(set(channels) & dnt_use))}** !!!]""")
             else:
-                st.markdown("""Конфликт с запрещёнными каналами: *Конфликта нет*""")
+                st.markdown("""Конфликт с запрещёнными каналами: :green[*Конфликта нет*]""")
 
             
             one_spine = []
@@ -358,18 +358,12 @@ if date:
                     one_spine.append(n)
 
             if one_spine:
-                st.markdown(f"""Одновременно питание недостатка и Ке на застой: **{', '.join(one_spine)}**""")  
+                st.markdown(f"""Одновременно питание недостатка и Ке на застой: :green[**{', '.join(one_spine)}**]""")  
                 st.markdown(f"""Подходящие точки в порядке снижения эффективности:""")
                 points = []
                 for i in df_3.columns:
                     point = ", ".join(df_3[i].to_list())
                     needed_points = re.findall(list(one_spine)[0]+"\d+", point)
-                    try:
-                        from PIL import Image
-                        image = Image.open(f"data\{needed_points[0]}.jpg")
-                        st.image(image, width=300)
-                    except: 
-                        print("")                   
                     st.markdown(f"""**{', '.join(list(needed_points))}**""")
             else:
                 st.markdown(f"""*Одной иглой питание недостатка и Ке на застой не получится, - нет пересекающихся каналов*""")  
