@@ -3,6 +3,8 @@ import pandas as pd
 from datetime import datetime
 from PIL import Image
 import re
+import matplotlib.pyplot as plt
+import numpy as np
 
 @st.cache_data
 def get_Ke(d, value):
@@ -157,7 +159,16 @@ def get_cart(year):
     return cart
 
 
-
+def get_chan(string):
+    canals_p = re.sub('[:,/.;#$%^&]', ' ', string).split()
+    canals = []
+    for c in canals_p:
+        if c.capitalize() in u_sin_pitanie.keys():
+            canals.append(c.capitalize())
+        else:
+            st.error(f"""*Название канала '{c.capitalize()}' введено неверно. Попробуйте снова!*""")
+            break
+    return canals    
 
 ########################################  Создаём приложение ######################################
 
@@ -165,11 +176,8 @@ def get_cart(year):
 
 
 st.title("Карта пациента")
-st.markdown(
-    """Добро пожаловать в приложение для построения карты пациента с точки зрения классической китайской медицины.
-    Для получения карты необходимо всего лишь ввести пол пациента и его дату рождения в соответствующие поля ниже:
-"""
-)
+st.markdown(f'Дата: **{datetime.now().strftime("%d.%m.%Y")}**')
+
 
 # Вводим пол пациента
 sex = st.selectbox(
@@ -177,8 +185,11 @@ sex = st.selectbox(
     ("", "Мужчина", "Женщина"),
 )
 
+# Вводим имя пациента
+patient = st.text_input('Введите Ф.И.О. пациента', '')
+
 # Вводим дату рождения
-date = st.text_input('Введите дату рождения пациента', '')
+date = st.text_input('Введите дату рождения', '')
 if date:
     try:
         birthday = str(pd.to_datetime(date, dayfirst=True)).split()[0] #input("Введите дату рождения")
@@ -242,30 +253,24 @@ if date:
         
     if method=="Питание и Ке":    
         plus = st.text_input('Введите канал в застое', '')
-        canals_p = re.sub('[:,/.;#$%^&]', ' ', plus).split()
-        canals_plus = []
-        for c in canals_p:
-            if c.capitalize() in u_sin_pitanie.keys():
-                canals_plus.append(c.capitalize())
-            else:
-                st.error(f"""*Название канала '{c.capitalize()}' введено неверно. Попробуйте снова!*""")
-                break
+        canals_plus = get_chan(plus)
                     
         if canals_plus:
             y = []
+            df_n = pd.DataFrame(
+                    index=["по стволам", "по ветвям", "по у-син", "внутри дома"]
+                )
+            st.markdown(f"""### Возможные каналы в недостатке:""")
             for elem in canals_plus:
-                st.markdown(f"""### Возможные каналы в недостатке при застое в {elem}:""")
-            
-                df_n = pd.DataFrame(
-                    {"Канал":[get_Ke(stvoly_Ke, elem), 
+                df_p = pd.DataFrame(
+                    {elem:[get_Ke(stvoly_Ke, elem), 
                             get_Ke(vetvi_Ke, elem),
                             u_sin_Ke[elem],
                             home_Ke[elem]]}, 
                     index=["по стволам", "по ветвям", "по у-син", "внутри дома"]
                 )
-                
-                st.dataframe(df_n)
-                
+                df_n = pd.concat([df_n, df_p], axis=1) 
+
                 y.append(get_Ke(stvoly_Ke, elem))
                 y.append(get_Ke(vetvi_Ke, elem))
                 
@@ -281,6 +286,8 @@ if date:
                 else:
                     y.append(home_Ke[elem])
                     
+            st.dataframe(df_n)
+
             y = [x for x in y if x is not None]
 
             ke_channels = set(y)
@@ -290,18 +297,20 @@ if date:
 
         ###################################   Для канала в недостатке:  ########################################
         
-        
-        
-        
         minus = st.text_input('Введите канал в недостатке', '')
-        canals_p = re.sub('[:,/.;#$%^&]', ' ', minus).split()
-        canals_minus = []
-        for c in canals_p:
-            if c.capitalize() in u_sin_pitanie.keys():
-                canals_minus.append(c.capitalize())
-            else:
-                st.error(f"""*Название канала '{c.capitalize()}' введено неверно. Попробуйте снова!*""")
-                break
+        canals_minus = get_chan(minus)
+
+        def get_chan(string):
+            canals_p = re.sub('[:,/.;#$%^&]', ' ', string).split()
+            canals = []
+            for c in canals_p:
+                if c.capitalize() in u_sin_pitanie.keys():
+                    canals.append(c.capitalize())
+                else:
+                    st.error(f"""*Название канала '{c.capitalize()}' введено неверно. Попробуйте снова!*""")
+                    break
+            return canals
+        
 
         if canals_minus:
             st.markdown("""### Выбор точек питания (перечисление по мере снижения эффективности):""")
@@ -336,13 +345,12 @@ if date:
                     celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[minus, "Стихия"]]], c]}, ')  
                 df_3.loc[df_3.index[3], minus] = celll 
 
-                df_3.loc[df_3.index[4], minus] = table.loc[home_Ke['Lu'], 'Luo']
+                df_3.loc[df_3.index[4], minus] = table.loc[home_Ke[minus], 'Luo']
 
             #Выводим DataFrame в интерфейсе
             st.dataframe(df_3)    
 
             st.markdown(f"""Возможные каналы для питания: **{', '.join(list(set(channels)))}**""")  
-            
             
             dnt_use = set([df.loc['Ствол', 'Не используем'], df.loc['Ветвь', 'Не используем']]) | set(canals_minus) | set(canals_plus)
 
@@ -369,12 +377,12 @@ if date:
                 st.markdown(f"""*Одной иглой питание недостатка и Ке на застой не получится, - нет пересекающихся каналов*""")  
             
                 second_spine = []
+                
                 for n in list(set(channels)):
                     if (n in use) & (n not in dnt_use):
                         second_spine.append(n)
 
                 if second_spine:
-                    # st.markdown(f"""Точки питания, рекомендованные по карте: **{', '.join(second_spine)}**""")  
                     st.markdown(f"""Подходящие точки рекомендованных каналов для питания в порядке снижения эффективности:""")
                     points = []
                     for i in df_3.columns:
@@ -394,16 +402,103 @@ if date:
                     image = Image.open(image_path)
                     st.image(image, width=300)
 
-                    # pp = st.text_input("Введите выбранные точки через запятую", "")
-                    # if pp:
-                    #     pp = pp.split(",")
-                    #     for p in pp:
-                    #         image_path = f"data/{p}.jpg"
-                    #         image = Image.open(image_path)
-                    #         st.image(image, width=300)
-
 
             st.markdown("""--------------------------------------------------""")
+
+        wind = get_chan(st.text_input('Введите каналы с ветром', ''))
+        fire = get_chan(st.text_input('Жар', ''))
+        water = get_chan(st.text_input('Холод', ''))
+        earth = get_chan(st.text_input('Сырость', ''))
+        metall = get_chan(st.text_input('Сухость', ''))
+
+        di = {'+':canals_plus,
+            '__':canals_minus,
+            'w':wind,
+            'жар':fire,
+            'холод':water,
+            'сырость':earth,
+            'сухость':metall
+            }
+
+        ander = dict()
+
+        for k in di.keys():
+            for v in di[k]:
+                v=v.lower()
+                if v in ander.keys():
+                    ander[v].append(k)
+                else:
+                    ander[v] = [k]
+
+        # Устанавливаем базовые параметры
+        num_vertices = 5
+        radius = 1
+        circle_radius = 0.08  # Радиус небольших кружков
+        colors = {'жар':'red', 'сырость':'orange', 'сухость':'grey', 'холод':'blue'}  # Цвета для кружочков
+
+        # Генерируем случайные знаки и цвета
+        def random_sign(channel, table=ander):
+            if channel in table.keys():
+                return table[channel]
+            else:
+                return ''
+
+        # Функция для рисования секторов графа
+        def draw_sector(ax, center, radius, theta_start, theta_end, sign):
+            # Угол в радианах
+            theta = np.linspace(np.radians(theta_start), np.radians(theta_end), 100)
+            x = np.append(center[0], center[0] + radius * np.cos(theta))
+            y = np.append(center[1], center[1] + radius * np.sin(theta))
+
+            # Заполняем сектор цветом
+            # color = random.choice(colors)  # Выбираем случайный цвет для кружка
+            ax.fill(x, y, color='lightgrey', alpha=0.5)
+            count = 0
+            for s in sign:
+                # Добавляем маленькие кружочки
+                if s in ['жар', 'холод', 'сырость', 'сухость']:
+                    circle_x = center[0] + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.4+count)
+                    circle_y = center[1] + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.4+count)
+                    ax.add_patch(plt.Circle((circle_x, circle_y), circle_radius, color=colors[s]))
+
+                # Добавляем знак в центр сектора
+                else:
+                    circle_x = center[0] + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.6-count)
+                    circle_y = center[1] + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.6-count)
+                    ax.text(circle_x, circle_y, s, ha='center', va='center', fontsize=25)
+                count += 0.3
+
+        # Создание графика
+        fig, ax = plt.subplots(figsize=(8, 8))
+        ax.axis('equal')  # Одинаковые масштабы по осям
+        ax.axis('off')  # Отключаем оси
+
+        # Открывающие углы для каждой вершины
+        angles = np.linspace(0, 360, num_vertices+1)
+
+        # Рисуем вершины: одна с 4 секторами, остальные с 2
+        draw_sector(ax, (np.sin(np.radians(angles[0])) * 2, np.cos(np.radians(angles[0])) * 2), radius, 0, 90, random_sign('th'))
+        draw_sector(ax, (np.sin(np.radians(angles[0])) * 2, np.cos(np.radians(angles[0])) * 2), radius, 90, 180, random_sign('hg'))
+        draw_sector(ax, (np.sin(np.radians(angles[0])) * 2, np.cos(np.radians(angles[0])) * 2), radius, 180, 270, random_sign('ht'))
+        draw_sector(ax, (np.sin(np.radians(angles[0])) * 2, np.cos(np.radians(angles[0])) * 2), radius, 270, 360, random_sign('si'))  # 4 сектора для первой вершины
+
+        draw_sector(ax, (np.sin(np.radians(angles[1])) * 2, np.cos(np.radians(angles[1])) * 2), radius, angles[1] + 0 * 180, angles[1] + (0 + 1) * 180, random_sign('sp'))
+        draw_sector(ax, (np.sin(np.radians(angles[1])) * 2, np.cos(np.radians(angles[1])) * 2), radius, angles[1] + 1 * 180, angles[1] + (1 + 1) * 180, random_sign('st'))
+
+        draw_sector(ax, (np.sin(np.radians(angles[2])) * 2, np.cos(np.radians(angles[2])) * 2), radius, angles[1] + 0 * 180, angles[1] + (0 + 1) * 180, random_sign('lu'))
+        draw_sector(ax, (np.sin(np.radians(angles[2])) * 2, np.cos(np.radians(angles[2])) * 2), radius, angles[1] + 1 * 180, angles[1] + (1 + 1) * 180, random_sign('co'))
+
+        draw_sector(ax, (np.sin(np.radians(angles[3])) * 2, np.cos(np.radians(angles[3])) * 2), radius, angles[4] + 0 * 180, angles[4] + (0 + 1) * 180, random_sign('kid'))
+        draw_sector(ax, (np.sin(np.radians(angles[3])) * 2, np.cos(np.radians(angles[3])) * 2), radius, angles[4] + 1 * 180, angles[4] + (1 + 1) * 180, random_sign('bl'))
+
+        draw_sector(ax, (np.sin(np.radians(angles[4])) * 2, np.cos(np.radians(angles[4])) * 2), radius, angles[4] + 0 * 180, angles[4] + (0 + 1) * 180, random_sign('liv'))
+        draw_sector(ax, (np.sin(np.radians(angles[4])) * 2, np.cos(np.radians(angles[4])) * 2), radius, angles[4] + 1 * 180, angles[4] + (1 + 1) * 180, random_sign('gb'))
+
+        # Отображаем график
+        plt.title(patient)
+        st.write(fig)
+
+
 
 
 
@@ -467,14 +562,18 @@ if date:
                 if elem in dnt_use:
                     st.warning(f"Точку **{el}** использовать нельзя!!!")
 
-            
     pp = st.text_input("Введите выбранные точки через запятую", "")
     if pp:
         pp = pp.split(",")
-        for p in pp:
-            p = p.strip().capitalize()
-            image_path = f"data/{p}.jpg"
-            image = Image.open(image_path)
-            st.image(image, width=300)
+        show_img = st.radio(
+            "Показать точки", ["нет", "да"]
+        )
+        if show_img=="да":
+            for p in pp:
+                p = p.strip().capitalize()
+                image_path = f"data/{p}.jpg"
+                image = Image.open(image_path)
+                st.image(image, width=300)
+        
 
             
