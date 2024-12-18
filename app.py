@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 from PIL import Image
 import re
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
