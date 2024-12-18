@@ -3,7 +3,6 @@ import pandas as pd
 from datetime import datetime
 from PIL import Image
 import re
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -24,8 +23,6 @@ def read_files():
     vetvi = pd.read_csv("vetvi.csv", index_col="year")
     sloy = pd.read_csv("sloy.csv", index_col="year")
     table = pd.read_csv("table.csv", index_col='Орган')
-    # tochki_pitanie = pd.read_csv("tochki_pitanie.csv", index_col='Орган').drop('Unnamed: 0', axis=1)
-    # channels_Ke = pd.read_csv("channels_Ke.csv", index_col=0)
     # points = pd.read_csv("points.csv", index_col=0)
     return polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table
 
@@ -106,15 +103,15 @@ sec_step = {1: 27,
             12: 25}
 
 
-man = ["Liv1", "Liv4", "Liv3", "Liv3, Gb37", "Liv5, Gb40", "Liv2", "Liv8", 
-       "Kid1", "Kid7", "Kid3", "Kid3, Bl58", "Kid4, Bl64", "Kid2", "Kid10", 
-       "Lu11", "Lu8", "Lu9", "Lu9, Co6", "Lu7, Co4", "Lu10", "Lu5", 
-       "Hg9, Ht9", "Hg5, Ht4", "Hg7, Ht7", "Hg7, Ht7, Si7", "Hg6, Ht5, Si4", "Hg8, Ht8", "Hg3, Ht3"]
+man = ["Liv1", "Liv4", "Liv3", "Liv3", "Liv5", "Liv2", "Liv8", 
+       "Kid1", "Kid7", "Kid3", "Kid3", "Kid4", "Kid2", "Kid10", 
+       "Lu11", "Lu8", "Lu9", "Lu9", "Lu7", "Lu10", "Lu5", 
+       "Hg9, Ht9", "Hg5, Ht4", "Hg7, Ht7", "Hg7, Ht7", "Hg6, Ht5", "Hg8, Ht8", "Hg3, Ht3"]
 
-woman = ["Gb41", "Gb44", "Gb34", "Gb37, Liv3", "Gb40, Liv5", "Gb38", "Gb43", 
-       "Bl65", "Bl67", "Bl40", "Kid3, Bl58", "Kid4, Bl64", "Bl60", "Bl66", 
-       "Co3", "Co1", "Co11", "Lu9, Co6", "Lu7, Co4", "Co5", "Co2", 
-       "Si3", "Si1", "Si8", "Hg7, Ht7, Si7", "Ht5, Si4", "Si5", "Si2"]
+woman = ["Gb41", "Gb44", "Gb34", "Gb37", "Gb40", "Gb38", "Gb43", 
+       "Bl65", "Bl67", "Bl40", "Bl58", "Kid4, Bl64", "Bl60", "Bl66", 
+       "Co3", "Co1", "Co11", "Co6", "Co4", "Co5", "Co2", 
+       "Si3", "Si1", "Si8", "Si7", "Si4", "Si5", "Si2"]
 
 ######################################  Составление карты пациента  ##########################################
 
@@ -170,6 +167,20 @@ def get_chan(string):
             st.error(f"""*Название канала '{c.capitalize()}' введено неверно. Попробуйте снова!*""")
             break
     return canals    
+
+
+def get_chan(string):
+    canals_p = re.sub('[:,/.;#$%^&]', ' ', string).split()
+    canals = []
+    for c in canals_p:
+        if c.capitalize() in u_sin_pitanie.keys():
+            canals.append(c.capitalize())
+        else:
+            st.error(f"""*Название канала '{c.capitalize()}' введено неверно. Попробуйте снова!*""")
+            break
+    return canals
+
+
 
 ########################################  Создаём приложение ######################################
 
@@ -300,19 +311,7 @@ if date:
         
         minus = st.text_input('Введите канал в недостатке', '')
         canals_minus = get_chan(minus)
-
-        def get_chan(string):
-            canals_p = re.sub('[:,/.;#$%^&]', ' ', string).split()
-            canals = []
-            for c in canals_p:
-                if c.capitalize() in u_sin_pitanie.keys():
-                    canals.append(c.capitalize())
-                else:
-                    st.error(f"""*Название канала '{c.capitalize()}' введено неверно. Попробуйте снова!*""")
-                    break
-            return canals
-        
-
+ 
         if canals_minus:
             st.markdown("""### Выбор точек питания (перечисление по мере снижения эффективности):""")
             
@@ -411,6 +410,8 @@ if date:
         water = get_chan(st.text_input('Холод', ''))
         earth = get_chan(st.text_input('Сырость', ''))
         metall = get_chan(st.text_input('Сухость', ''))
+
+
 
         di = {'+':canals_plus,
             '__':canals_minus,
@@ -548,17 +549,17 @@ if date:
             text_ld = ""
             
             if sex == "Мужчина":
-                points = man[lunar_day-1]
-                st.markdown(f"##### Точки по лунным дворцам: \t{points}")
+                points_ld = man[lunar_day-1]
+                st.markdown(f"##### Точки по лунным дворцам: \t{points_ld}")
             
             else:
-                points = woman[lunar_day-1]
-                st.markdown(f"##### Точки по лунным дворцам: \t{points}")
+                points_ld = woman[lunar_day-1]
+                st.markdown(f"##### Точки по лунным дворцам: \t{points_ld}")
 
             
             
-            points = points.split(', ')
-            for el in points:
+            points_ld = points_ld.split(', ')
+            for el in points_ld:
                 elem = re.match("\D*", el)[0]
                 if elem in dnt_use:
                     st.warning(f"Точку **{el}** использовать нельзя!!!")
