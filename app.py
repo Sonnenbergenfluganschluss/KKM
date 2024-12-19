@@ -406,16 +406,18 @@ if date:
             st.markdown("""--------------------------------------------------""")
 
         wind = get_chan(st.text_input('Введите каналы с ветром', ''))
+        xue = get_chan(st.text_input('Xue', ''))
         fire = get_chan(st.text_input('Жар', ''))
         water = get_chan(st.text_input('Холод', ''))
         earth = get_chan(st.text_input('Сырость', ''))
         metall = get_chan(st.text_input('Сухость', ''))
 
-
+############################################## Рисуем карту патогенов ###########################################
 
         di = {'+':canals_plus,
             '__':canals_minus,
             'w':wind,
+            'Xue':xue,
             'жар':fire,
             'холод':water,
             'сырость':earth,
