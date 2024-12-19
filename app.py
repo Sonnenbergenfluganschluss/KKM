@@ -416,7 +416,7 @@ if date:
 
         di = {'+':canals_plus,
             '__':canals_minus,
-            'w':wind,
+            'Gui':wind,
             'Xue':xue,
             'жар':fire,
             'холод':water,
@@ -469,7 +469,7 @@ if date:
                 else:
                     circle_x = center[0] + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.6-count)
                     circle_y = center[1] + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.6-count)
-                    ax.text(circle_x, circle_y, s, ha='center', va='center', fontsize=25)
+                    ax.text(circle_x, circle_y, s, ha='center', va='center', fontsize=15)
                 count += 0.3
 
         # Создание графика
