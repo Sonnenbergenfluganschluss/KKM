@@ -394,13 +394,13 @@ if date:
                 else:
                     st.markdown(f"""*Подходящих точек не найдено :(*""") 
 
-                for channal in canals_plus:
-                    st.markdown(f"""Застой в канале {channal} корректируем техникой 'тяни-толкай', точка:""")
-                    st.markdown(f"""**{table.loc[channal, 'Jing_Jin']}**""")
+                # for channal in canals_plus:
+                #     st.markdown(f"""Застой в канале {channal} корректируем техникой 'тяни-толкай', точка:""")
+                #     st.markdown(f"""**{table.loc[channal, 'Jing_Jin']}**""")
             
-                    image_path = f"data/{table.loc[channal, 'Jing_Jin']}.jpg"
-                    image = Image.open(image_path)
-                    st.image(image, width=300)
+                #     image_path = f"data/{table.loc[channal, 'Jing_Jin']}.jpg"
+                #     image = Image.open(image_path)
+                #     st.image(image, width=300)
 
 
             st.markdown("""--------------------------------------------------""")
@@ -458,19 +458,21 @@ if date:
             # color = random.choice(colors)  # Выбираем случайный цвет для кружка
             ax.fill(x, y, color='lightgrey', alpha=0.5)
             count = 0
+            cnt = 0
             for s in sign:
                 # Добавляем маленькие кружочки
                 if s in ['жар', 'холод', 'сырость', 'сухость']:
-                    circle_x = center[0] + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.4+count)
-                    circle_y = center[1] + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.4+count)
+                    circle_x = center[0] + count + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.5)
+                    circle_y = center[1] + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.5)
                     ax.add_patch(plt.Circle((circle_x, circle_y), circle_radius, color=colors[s]))
 
                 # Добавляем знак в центр сектора
                 else:
-                    circle_x = center[0] + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.6-count)
-                    circle_y = center[1] + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.6-count)
+                    circle_x = center[0] + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.5)
+                    circle_y = center[1] - cnt + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.5)
                     ax.text(circle_x, circle_y, s, ha='center', va='center', fontsize=15)
-                count += 0.3
+                count += 0.15   
+                cnt += 0.45             
 
         # Создание графика
         fig, ax = plt.subplots(figsize=(8, 8))
