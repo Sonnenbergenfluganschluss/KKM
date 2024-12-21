@@ -344,8 +344,10 @@ if date:
                 for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
                     celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[minus, "Стихия"]]], c]}, ')  
                 df_3.loc[df_3.index[3], minus] = celll 
-
-                df_3.loc[df_3.index[4], minus] = table.loc[home_Ke[minus], 'Luo']
+                if type(home_Ke['Ht']) == type(str()): 
+                    df_3.loc[df_3.index[4], minus] = table.loc[home_Ke[minus], 'Luo']
+                else:
+                    df_3.loc[df_3.index[4], minus] = table.loc[home_Ke[minus][0], 'Luo']
 
             #Выводим DataFrame в интерфейсе
             st.dataframe(df_3)    
