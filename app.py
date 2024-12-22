@@ -414,6 +414,7 @@ if date:
         earth = get_chan(st.text_input('Сырость', ''))
         metall = get_chan(st.text_input('Сухость', ''))
 
+
 ############################################## Рисуем карту патогенов ###########################################
 
         di = {'+':canals_plus,
@@ -506,6 +507,9 @@ if date:
         plt.title(patient)
         st.write(fig)
 
+        # df_tochki = pd.DataFrame(
+        #     index=di.keys()[2:]
+        # )
 
 
 
