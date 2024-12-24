@@ -408,8 +408,8 @@ if date:
             st.markdown("""--------------------------------------------------""")
 
         wind = get_chan(st.text_input('Введите каналы с ветром', ''))
-        tree = get_chan(st.text_input('Патологический рост', ''))
         xue = get_chan(st.text_input('Xue', ''))
+        tree = get_chan(st.text_input('Патологический рост', ''))
         fire = get_chan(st.text_input('Жар', ''))
         water = get_chan(st.text_input('Холод', ''))
         earth = get_chan(st.text_input('Сырость', ''))
