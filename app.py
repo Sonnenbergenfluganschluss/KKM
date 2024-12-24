@@ -408,6 +408,7 @@ if date:
             st.markdown("""--------------------------------------------------""")
 
         wind = get_chan(st.text_input('Введите каналы с ветром', ''))
+        tree = get_chan(st.text_input('Патологический рост', ''))
         xue = get_chan(st.text_input('Xue', ''))
         fire = get_chan(st.text_input('Жар', ''))
         water = get_chan(st.text_input('Холод', ''))
@@ -420,6 +421,7 @@ if date:
         di = {'+':canals_plus,
             '__':canals_minus,
             'Gui':wind,
+            'tree':tree,
             'Xue':xue,
             'жар':fire,
             'холод':water,
@@ -441,7 +443,7 @@ if date:
         num_vertices = 5
         radius = 1
         circle_radius = 0.08  # Радиус небольших кружков
-        colors = {'жар':'red', 'сырость':'orange', 'сухость':'grey', 'холод':'blue'}  # Цвета для кружочков
+        colors = {'жар':'red', 'сырость':'orange', 'сухость':'grey', 'холод':'blue', 'tree':'green'}  # Цвета для кружочков
 
         # Генерируем случайные знаки и цвета
         def random_sign(channel, table=ander):
@@ -464,7 +466,7 @@ if date:
             cnt = 0
             for s in sign:
                 # Добавляем маленькие кружочки
-                if s in ['жар', 'холод', 'сырость', 'сухость']:
+                if s in ['жар', 'холод', 'сырость', 'сухость', 'tree']:
                     circle_x = center[0] + count + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.5)
                     circle_y = center[1] + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.5)
                     ax.add_patch(plt.Circle((circle_x, circle_y), circle_radius, color=colors[s]))
