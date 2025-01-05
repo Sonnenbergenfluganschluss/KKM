@@ -24,9 +24,11 @@ def read_files():
     sloy = pd.read_csv("sloy.csv", index_col="year")
     table = pd.read_csv("table.csv", index_col='Орган')
     # points = pd.read_csv("points.csv", index_col=0)
-    return polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table
+    pitanie = pd.read_csv("pitanie.csv", index_col='Unnamed: 0')
+    ke = pd.read_csv("ke.csv", index_col='Unnamed: 0')
+    return polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table, pitanie, ke
 
-polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table = read_files()
+polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table, pitanie, ke = read_files()
 
 
 
