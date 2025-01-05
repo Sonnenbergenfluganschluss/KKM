@@ -25,9 +25,12 @@ def read_files():
     table = pd.read_csv("table.csv", index_col='Орган')
     pitanie = pd.read_csv("pitanie.csv", index_col='Unnamed: 0')
     # points = pd.read_csv("points.csv", index_col=0)
-    return polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table, pitanie
+    pitanie = pd.read_csv("pitanie.csv", index_col='Unnamed: 0')
+    ke = pd.read_csv("ke.csv", index_col='Unnamed: 0')
+    return polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table, pitanie, ke
 
-polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table, pitanie = read_files()
+polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table, pitanie, ke = read_files()
+
 
 
 
@@ -181,11 +184,17 @@ def get_chan(string):
             break
     return canals
 
-def pitanie():
-    pass
 
-def ke():
-    pass
+def get_list_of_channels(lst, table, srez):
+    a = []
+    for i in lst:
+        a += table[i][:srez].to_list()
+        
+    a = " ".join(a).replace(",", '')
+    a = a.replace(",", '')
+    a = re.sub("\d", "", a)   
+    return a.split()
+
 
 ########################################  Создаём приложение ######################################
 
@@ -268,59 +277,30 @@ if date:
 
     ###################################   Вводим канал в застое:    ###########################################
         
-        
-        
     if method=="Питание и Ке":    
         plus = st.sidebar.text_input('Введите канал в застое', '')
         canals_plus = get_chan(plus)
                     
         if canals_plus:
-            y = []
-            df_n = pd.DataFrame(
-                    index=["по стволам", "по ветвям", "по у-син", "внутри дома"]
-                )
+            # st.dataframe(ke[canals_plus][:4]) 
+            
+            a = get_list_of_channels(canals_plus, ke, 4)
+
             st.sidebar.markdown(f"""Возможные каналы в недостатке:""")
-            for elem in canals_plus:
-                df_p = pd.DataFrame(
-                    {elem:[get_Ke(stvoly_Ke, elem), 
-                            get_Ke(vetvi_Ke, elem),
-                            u_sin_Ke[elem],
-                            home_Ke[elem]]}, 
-                    index=["по стволам", "по ветвям", "по у-син", "внутри дома"]
-                )
-                df_n = pd.concat([df_n, df_p], axis=1) 
-
-                y.append(get_Ke(stvoly_Ke, elem))
-                y.append(get_Ke(vetvi_Ke, elem))
-                
-                if type(u_sin_Ke[elem]) == type(list()):
-                    y.append(u_sin_Ke[elem][0])
-                    y.append(u_sin_Ke[elem][1])
-                else:
-                    y.append(u_sin_Ke[elem])
-                    
-                if type(home_Ke[elem]) == type(list()):    
-                    y.append(home_Ke[elem][0])
-                    y.append(home_Ke[elem][1])
-                else:
-                    y.append(home_Ke[elem])
-                    
-            st.dataframe(df_n)
-
-            y = [x for x in y if x is not None]
-
-            ke_channels = set(y)
-            st.sidebar.markdown(f""":blue[**{', '.join(list(ke_channels))}**]""")
+            st.sidebar.markdown(f""":blue[**{', '.join(list(set(a)))}**]""")
+            
 
 
-
-        ###################################   Для канала в недостатке:  ########################################
+    ###################################   Для канала в недостатке:  ########################################
         
         minus = st.sidebar.text_input('Введите канал в недостатке', '')
         canals_minus = get_chan(minus)
  
         if canals_minus:
-            # st.markdown("""### Выбор точек питания (перечисление по мере снижения эффективности):""")
+            #Выводим DataFrame в интерфейсе:
+            st.dataframe(pitanie[canals_minus].T)  
+
+            m = get_list_of_channels(canals_minus, pitanie, 48)  
             
             df_3 = pd.DataFrame(
                 columns=canals_minus,
@@ -357,10 +337,8 @@ if date:
                 else:
                     df_3.loc[df_3.index[4], minus] = table.loc[home_Ke[minus][0], 'Luo']
 
-            #Выводим DataFrame в интерфейсе
-            st.dataframe(df_3)    
 
-            # st.markdown(f"""Возможные каналы для питания: **{', '.join(list(set(channels)))}**""")  
+            st.markdown(f"""Возможные каналы для питания: **{', '.join(list(set(m)))}**""")  
             
             # dnt_use = set([df.loc['Ствол', 'Не используем'], df.loc['Ветвь', 'Не используем']]) | set(canals_minus) | set(canals_plus)
 
