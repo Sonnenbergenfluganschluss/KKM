@@ -74,18 +74,21 @@ home_Ke = {'Liv': 'Gb',
             'Bl': 'Kid'}
 
 technika = {"gui":"Используется техника выведения:\
-    \nПарные иглы ставятся билатерально в дистперсии под углом 90\*\
-    \nПоследовательность постановки - по полу: с сильной стороны на слабую. \
-    \nОдиночные иглы ставятся в дисперсии под углом 90\*",
-    "xue":"Иглы ставятся билатерально в технике <<тяни-толкай>>:\
-    \nПод углом 90\* на здоровой стороне в тонизации, на больной - в дисперсии.\
-    \nСнимаются в обратном порядке. \
-    \nПри двусторонней или срединной травме иглы ставятся по полу:\
-    \nна сильной стороне в тонизации, на слабой - в дисперсии.",
-    "pit":"Иглы ставятся в тонизации, по полу, на слабой стороне:\
-    \nдля мужчин - слева, для женщин - справа",
-    "JJ":"Иглы ставятся билатерально под углом 45\* на здоровой стороне в тонизации, на больной - в дисперсии.\
-    \nСнимаются в обратном порядке."}
+                \nПарные иглы ставятся билатерально в дистперсии под углом 90\*\
+                \nПоследовательность постановки - по полу: с сильной стороны на слабую. \
+                \nОдиночные иглы ставятся в дисперсии под углом 90\*",
+            "xue":"Иглы ставятся билатерально в технике <<тяни-толкай>>:\
+                \nПод углом 90\* на здоровой стороне в тонизации, на больной - в дисперсии.\
+                \nСнимаются в обратном порядке. \
+                \nПри двусторонней или срединной травме иглы ставятся по полу:\
+                \nна сильной стороне в тонизации, на слабой - в дисперсии.",
+            "pit":"Иглы ставятся в тонизации, по полу, на слабой стороне:\
+                \nдля мужчин - слева, для женщин - справа",
+            "JJ":"Иглы ставятся билатерально под углом 45\* на здоровой стороне в тонизации, на больной - в дисперсии.\
+                \nСнимаются в обратном порядке.", 
+            "ld":"Если на сеансе используем только точки <<лунных дворцов>>, то иглы ставятся билатерально в тонизации под углом 90\*.\
+                \nЕсли <<лунные дворцы>> используются как дополнение к лечению, то иглы ставятся в тонизации с одной стороны по полу, на слабой стороне:\
+                \nдля мужчин - слева, для женщин - справа"}
 
 vis_yaer = [1920, 1924, 1928, 1932, 1936, 1940, 1944, 1948, 1952, 1956, 1960, 1964, 1968, 
             1972, 1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008, 2012, 2016, 2020, 
@@ -225,9 +228,6 @@ def draw_sector(ax, center, radius, theta_start, theta_end, sign):
 
 ########################################  Создаём приложение ######################################
 
-
-
-
 st.title("Карта пациента")
 st.markdown(f'Дата: **{datetime.now().strftime("%d.%m.%Y")}**')
 
@@ -237,18 +237,13 @@ patient = st.sidebar.text_input('Введите Ф.И.О. пациента', '')
 st.header(patient)
 # st.markdown(f'### Пациент: **{patient}**')
 
-# Вводим пол пациента
-sex = st.sidebar.selectbox(
-    "Выберете пол пациента",
-    ("", "Мужчина", "Женщина"),
-)
 
 # Вводим дату рождения
-date = st.sidebar.text_input('Введите дату рождения', '')
-if date:
+born = st.sidebar.text_input('Введите дату рождения', '')
+if born:
     try:
-        birthday = str(pd.to_datetime(date, dayfirst=True)).split()[0] #input("Введите дату рождения")
-        st.markdown(f'Дата рождения: **{pd.to_datetime(date, dayfirst=True).strftime("%d.%m.%Y")}**')
+        birthday = str(pd.to_datetime(born, dayfirst=True)).split()[0] #input("Введите дату рождения")
+        st.markdown(f'Дата рождения: **{pd.to_datetime(born, dayfirst=True).strftime("%d.%m.%Y")}**')
     except:
         st.error("Некорректная дата. Попробуйте снова")
 
@@ -279,6 +274,8 @@ if date:
     # Выводим DataFrame в интерфейсе
     st.dataframe(df)
 
+    complaints = st.sidebar.text_area("Жалобы", "")
+
     use = set([df.loc['Ствол', 'Используем'], df.loc['Ветвь', 'Используем']]) | (Zang_Fu_Xu)
         
     dnt_use = set([df.loc['Ствол', 'Не используем'], df.loc['Ветвь', 'Не используем']]) 
@@ -299,15 +296,13 @@ if date:
 
     method = st.sidebar.selectbox(
     "Выберете метод лечения",
-    (" ", "Питание и Ке", "Лунные дворцы", "Травма"))
+    (" ", "Питание и Ке", "Лунные дворцы"))
     
 
     ###################################   Вводим канал в застое:    ###########################################
         
-    if method=="Питание и Ке":    
-    
-
-
+    if method=="Питание и Ке":
+        
         plus = st.sidebar.text_input('Введите основной канал в застое', '')
         canals_plus = get_chan(plus)
                     
@@ -478,41 +473,39 @@ if date:
             st.markdown("""--------------------------------------------------""")
 
         ##### Gui #####
-        t_gui = []
-        for i in di['Gui']:
-            t_gui.append(table.loc[i, 'Gui'])
-        tt_gui = ', '.join(t_gui)
-        st.markdown(f"""#### Работа с Gui: :green[{tt_gui}]""")
-        for t in t_gui:
-            st.markdown(f"""#### :green[***{t}***]""")            
-            try:
-                st.markdown(f"""*{points.loc[t, "Локализация"]}*""")
-            except:
-                st.markdown(f"""*Точки нет в базе данных*""")
-        st.markdown(f"""*{technika['gui']}*""") 
+        if wind:
+            t_gui = []
+            for i in di['Gui']:
+                t_gui.append(table.loc[i, 'Gui'])
+            tt_gui = ', '.join(t_gui)
+            st.markdown(f"""#### Работа с Gui: :green[{tt_gui}]""")
+            for t in t_gui:
+                st.markdown(f"""#### :green[***{t}***]""")            
+                try:
+                    st.markdown(f"""*{points.loc[t, "Локализация"]}*""")
+                except:
+                    st.markdown(f"""*Точки нет в базе данных*""")
+            st.markdown(f"""*{technika['gui']}*""") 
 
 
         ##### Xue #####
-        t_xue = []
-        for i in di['Xue']:
-            t_xue.append(table.loc[i, 'Xue'])
-        tt_xue = ', '.join(t_xue)
-        st.markdown(f"""#### Работа с Xue: :green[{tt_xue}]""")
-        for t in t_xue:
-            st.markdown(f"""#### :green[***{t}***]""")            
-            try:
-                st.markdown(f"""*{points.loc[t, "Локализация"]}*""")
-            except:
-                st.markdown(f"""*Точки нет в базе данных*""")
-        st.markdown(f"""*{technika['xue']}*""") 
-
-
-        
+        if xue:
+            t_xue = []
+            for i in di['Xue']:
+                t_xue.append(table.loc[i, 'Xue'])
+            tt_xue = ', '.join(t_xue)
+            st.markdown(f"""#### Работа с Xue: :green[{tt_xue}]""")
+            for t in t_xue:
+                st.markdown(f"""#### :green[***{t}***]""")            
+                try:
+                    st.markdown(f"""*{points.loc[t, "Локализация"]}*""")
+                except:
+                    st.markdown(f"""*Точки нет в базе данных*""")
+            st.markdown(f"""*{technika['xue']}*""") 
 
 
 
 ####################################   Лунные дворцы    ############################################
-
 
 
     if method=="Лунные дворцы":
@@ -520,14 +513,20 @@ if date:
         image = Image.open(image_path)
         st.image(image, width=600)
         
-        date = st.text_input('Введите дату события', '')
+        # Вводим пол пациента
+        sex = st.sidebar.selectbox(
+            "Выберете пол пациента",
+            ("", "Мужчина", "Женщина"),
+        )
+
+        date = st.sidebar.text_input('Введите дату события', '')
         if date:
             try:
                 date = str(pd.to_datetime(date, dayfirst=True)).split()[0] #input("Введите дату рождения")
                 year = int(date[:4])
                 month = int(date[5:7])
                 day = int(date[8:])
-                st.markdown(f'Дата события: **{date}**')
+                st.markdown(f'Дата события: **{pd.to_datetime(date, dayfirst=True).strftime("%d.%m.%Y")}**')
             except:
                 st.error("*Некорректная дата. Попробуйте снова*")
 
@@ -571,12 +570,15 @@ if date:
                 if elem in dnt_use:
                     st.warning(f"Точку **{el}** использовать нельзя!!!")
 
+
+            st.markdown(f"""*{technika['ld']}*""")
+
     #################################################       Выбранные точки      ##################################################
     
     pp = st.sidebar.text_input("Введите выбранные точки через запятую", "")
-    st.markdown(f"""#### ***В этом сеансе поставлены точки:***""")
-    st.markdown(f"""#### **:blue[{pp}]**""")
     if pp:
+        st.markdown(f"""#### ***В этом сеансе поставлены точки:***""")
+        st.markdown(f"""#### **:blue[{pp}]**""")
         pp = pp.split(",")
         show_img = st.radio(
             "Показать точки", ["нет", "да"]
@@ -588,5 +590,16 @@ if date:
                 image = Image.open(image_path)
                 st.image(image, width=300)
         
+########################################        Сохраняем пациента         ############################################
 
-            
+
+        df_save = pd.DataFrame(
+            index=[str(datetime.now().strftime("%d.%m.%Y"))],
+            data=[[patient, born, complaints, canals_plus, canals_minus, block, wind,
+                  protivotok, xue, tree, fire, water, earth, metall, pp]],
+            columns=['patient', 'birthday', 'жалобы', 'застой', 'недостаток', 'блок', 'Gui', 
+                     'противоток', 'xue', 'пат.рост', 'жар', 'холод', 'сырость', 'сухость', 'лечение']
+        )
+
+        st.dataframe(df_save)
+        df_save.to_csv(f"\patients\{patient}_{df_save.index[-1]}.csv")
