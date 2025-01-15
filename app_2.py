@@ -230,23 +230,23 @@ def draw_sector(ax, center, radius, theta_start, theta_end, sign):
 
 st.title("Карта пациента")
 st.markdown(f'Дата: **{datetime.now().strftime("%d.%m.%Y")}**')
-
+ddate = st.sidebar.text_input('Введите дату приёма', '')
 # Вводим имя пациента
 patient = st.sidebar.text_input('Введите Ф.И.О. пациента', '')
 
 st.header(patient)
-# st.markdown(f'### Пациент: **{patient}**')
 
 
 # Вводим дату рождения
 born = st.sidebar.text_input('Введите дату рождения', '')
 if born:
     try:
+        born = pd.to_datetime(born, dayfirst=True).strftime("%d.%m.%Y")
         birthday = str(pd.to_datetime(born, dayfirst=True)).split()[0] #input("Введите дату рождения")
         st.markdown(f'Дата рождения: **{pd.to_datetime(born, dayfirst=True).strftime("%d.%m.%Y")}**')
     except:
         st.error("Некорректная дата. Попробуйте снова")
-
+        
     # Получаем год и полугодие по китайскому календарю
     year = int(birthday[:4])
     if birthday in polugodie.loc[year, "I полугодие"]:
@@ -272,9 +272,7 @@ if born:
         
         
     # Выводим DataFrame в интерфейсе
-    st.dataframe(df)
-
-    complaints = st.sidebar.text_area("Жалобы", "")
+    st.dataframe(df, use_container_width=True)
 
     use = set([df.loc['Ствол', 'Используем'], df.loc['Ветвь', 'Используем']]) | (Zang_Fu_Xu)
         
@@ -287,7 +285,27 @@ if born:
                                             Zang_Fu_Xu)
                                             
     st.markdown(f"""Нейтральные каналы: **{', '.join(list(neutral))}**""")
+
+    if st.checkbox("Показать предыдущую запись"):
+        try:
+            df_save = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0').iloc[-1:]
+            df_save = df_save.replace('[]', None).dropna(axis=1)
+            st.dataframe(df_save.T, use_container_width=True)
+        except:
+            st.markdown(f':red[Пациент **{patient}** отсутствует в базе данных]')
+
+    if st.checkbox("Показать все записи"):
+        try:
+            df_save_2 = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
+            st.dataframe(df_save_2, use_container_width=True)
+        except:
+            st.markdown(f':red[Пациент **{patient}** отсутствует в базе данных]')        
+
     st.markdown("""--------------------------------------------------""")
+
+
+    complaints = st.sidebar.text_area("Жалобы", "")
+
 
     
     
@@ -326,16 +344,18 @@ if born:
             st.sidebar.markdown(f"""Возможные каналы в застое:""")
             st.sidebar.markdown(f""":blue[**{', '.join(list(set(zastoi)))}**]""")
 
-
         block = get_chan(st.sidebar.text_input('Введите каналы в блоке', ''))
         wind = get_chan(st.sidebar.text_input('Введите каналы с ветром', ''))
         protivotok = get_chan(st.sidebar.text_input('Введите каналы с противотоком', ''))
         xue = get_chan(st.sidebar.text_input('Xue', ''))
-        tree = get_chan(st.sidebar.text_input('Патологический рост', ''))
-        fire = get_chan(st.sidebar.text_input('Жар', ''))
-        water = get_chan(st.sidebar.text_input('Холод', ''))
-        earth = get_chan(st.sidebar.text_input('Сырость', ''))
-        metall = get_chan(st.sidebar.text_input('Сухость', ''))
+        if st.sidebar.checkbox("Работа с качеством"):
+            tree = get_chan(st.sidebar.text_input('Патологический рост', ''))
+            fire = get_chan(st.sidebar.text_input('Жар', ''))
+            water = get_chan(st.sidebar.text_input('Холод', ''))
+            earth = get_chan(st.sidebar.text_input('Сырость', ''))
+            metall = get_chan(st.sidebar.text_input('Сухость', ''))
+        else:
+            tree, fire, water, earth, metall = [], [], [], [], []
 
         di = {'+':canals_plus,
             '__':canals_minus,
@@ -412,9 +432,9 @@ if born:
         ##### Питание #####
 
         if canals_minus:            
-            st.markdown(f"""#### Основной недостаток выявлен в канале {canals_minus}:""")
+            st.markdown(f"""#### Основной недостаток выявлен в канале {canals_minus[0]}:""")
             # Выводим DataFrame в интерфейсе:
-            st.dataframe(pitanie[canals_minus])  
+            st.dataframe(pitanie[canals_minus], use_container_width=True)  
                 
             m = get_list_of_channels(canals_minus, pitanie, 5)  
 
@@ -503,7 +523,47 @@ if born:
                     st.markdown(f"""*Точки нет в базе данных*""")
             st.markdown(f"""*{technika['xue']}*""") 
 
+        pp = st.sidebar.text_input("Введите выбранные точки через запятую", "")
+        if pp:
+            st.markdown(f"""#### ***В этом сеансе поставлены точки:***""")
+            st.markdown(f"""#### **:blue[{pp}]**""")
+            # pp = pp.split(",")
+            # show_img = st.radio(
+            #     "Показать точки", ["нет", "да"]
+            # )
+            # if show_img=="да":
+            #     for p in pp:
+            #         p = p.strip().capitalize()
+            #         image_path = f"data/{p}.jpg"
+            #         image = Image.open(image_path)
+            #         st.image(image, width=300)
 
+            comments = st.text_area("Ваши комментарии", "")
+
+            
+            ################################        Сохраняем пациента         ############################################
+
+            if st.sidebar.button("Save",type="primary"):
+                new_save = pd.DataFrame(
+                    index=[ddate],#[str(datetime.now().strftime("%d.%m.%Y"))],
+                    data=[[patient, born, complaints, method, canals_plus, canals_minus, block, wind,
+                        protivotok, xue, tree, fire, water, earth, metall, pp, comments]],
+                    columns=['ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'застой', 'недостаток', 'блок', 'Gui', 
+                            'противоток', 'xue', 'пат.рост', 'жар', 'холод', 'сырость', 'сухость', 'лечение', 'комментарии']
+                ).replace("[]", None)
+                
+                save_all = pd.read_csv("patients/all_patients.csv", index_col='Unnamed: 0')
+                save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
+                save_all.to_csv("patients/all_patients.csv")
+                try:
+                    df_saved = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
+                    save = pd.concat([df_saved, new_save], axis=0)#.drop_duplicates()
+                    save.to_csv(f"patients/{patient}.csv")
+                    # st.dataframe(save)
+                    st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                except:
+                    new_save.to_csv(f"patients/{patient}.csv")
+                    st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
 
 ####################################   Лунные дворцы    ############################################
 
@@ -519,14 +579,14 @@ if born:
             ("", "Мужчина", "Женщина"),
         )
 
-        date = st.sidebar.text_input('Введите дату события', '')
-        if date:
+        doh = st.sidebar.text_input('Введите дату события', '')
+        if doh:
             try:
-                date = str(pd.to_datetime(date, dayfirst=True)).split()[0] #input("Введите дату рождения")
+                date = str(pd.to_datetime(doh, dayfirst=True)).split()[0] #input("Введите дату рождения")
                 year = int(date[:4])
                 month = int(date[5:7])
                 day = int(date[8:])
-                st.markdown(f'Дата события: **{pd.to_datetime(date, dayfirst=True).strftime("%d.%m.%Y")}**')
+                st.markdown(f'Дата события: **{pd.to_datetime(doh, dayfirst=True).strftime("%d.%m.%Y")}**')
             except:
                 st.error("*Некорректная дата. Попробуйте снова*")
 
@@ -573,33 +633,43 @@ if born:
 
             st.markdown(f"""*{technika['ld']}*""")
 
-    #################################################       Выбранные точки      ##################################################
-    
-    pp = st.sidebar.text_input("Введите выбранные точки через запятую", "")
-    if pp:
-        st.markdown(f"""#### ***В этом сеансе поставлены точки:***""")
-        st.markdown(f"""#### **:blue[{pp}]**""")
-        pp = pp.split(",")
-        show_img = st.radio(
-            "Показать точки", ["нет", "да"]
-        )
-        if show_img=="да":
-            for p in pp:
-                p = p.strip().capitalize()
-                image_path = f"data/{p}.jpg"
-                image = Image.open(image_path)
-                st.image(image, width=300)
+        #################################################       Выбранные точки      ##################################################
         
-########################################        Сохраняем пациента         ############################################
+        pp = st.sidebar.text_input("Введите выбранные точки через запятую", "")
+        if pp:
+            st.markdown(f"""#### ***В этом сеансе поставлены точки:***""")
+            st.markdown(f"""#### **:blue[{pp}]**""")
+            # pp = pp.split(",")
+            # show_img = st.radio(
+            #     "Показать точки", ["нет", "да"]
+            # )
+            # if show_img=="да":
+            #     for p in pp:
+            #         p = p.strip().capitalize()
+            #         image_path = f"data/{p}.jpg"
+            #         image = Image.open(image_path)
+            #         st.image(image, width=300)
 
+            comments = st.text_area("Ваши комментарии", "")
 
-        df_save = pd.DataFrame(
-            index=[str(datetime.now().strftime("%d.%m.%Y"))],
-            data=[[patient, born, complaints, canals_plus, canals_minus, block, wind,
-                  protivotok, xue, tree, fire, water, earth, metall, pp]],
-            columns=['patient', 'birthday', 'жалобы', 'застой', 'недостаток', 'блок', 'Gui', 
-                     'противоток', 'xue', 'пат.рост', 'жар', 'холод', 'сырость', 'сухость', 'лечение']
-        )
+            
+            ################################        Сохраняем пациента         ############################################
 
-        st.dataframe(df_save)
-        df_save.to_csv(f"\patients\{patient}_{df_save.index[-1]}.csv")
+            if st.sidebar.button("Save",type="primary"):
+                new_save = pd.DataFrame(
+                    index=[ddate],#[str(datetime.now().strftime("%d.%m.%Y"))],
+                    data=[[patient, born, complaints, method, doh, pp, comments]],
+                    columns=['ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'дата события', 'лечение', 'комментарии']
+                ).replace('[]', None)
+                save_all = pd.read_csv("patients/all_patients.csv", index_col='Unnamed: 0')
+                save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
+                save_all.to_csv("patients/all_patients.csv")                
+                try:
+                    df_saved = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
+                    save = pd.concat([df_saved, new_save], axis=0)
+                    # st.dataframe(save)
+                    save.to_csv(f"patients/{patient}.csv")
+                    st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                except:
+                    new_save.to_csv(f"patients/{patient}.csv")
+                    st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
