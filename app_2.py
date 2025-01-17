@@ -18,7 +18,7 @@ def read_files():
     polugodie = pd.read_csv("Полугодия.csv", index_col="year")
     u_sin = pd.read_csv("У-син.csv", index_col="Орган")
     season_qi = pd.read_csv("season_qi.csv", index_col="Орган")
-    qi = pd.read_csv("qi.csv", index_col="Стихия")
+    # qi = pd.read_csv("qi.csv", index_col="Стихия")
     stvoly = pd.read_csv("stvoly.csv", index_col="year")
     vetvi = pd.read_csv("vetvi.csv", index_col="year")
     sloy = pd.read_csv("sloy.csv", index_col="year")
@@ -26,9 +26,9 @@ def read_files():
     points = pd.read_csv("points.csv", index_col=0)
     pitanie = pd.read_csv("pitanie.csv", index_col='Unnamed: 0')
     ke = pd.read_csv("ke.csv", index_col='Unnamed: 0')
-    return polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table, points, pitanie, ke
+    return polugodie, u_sin, season_qi, stvoly, vetvi, sloy, table, points, pitanie, ke
 
-polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table, points, pitanie, ke = read_files()
+polugodie, u_sin, season_qi, stvoly, vetvi, sloy, table, points, pitanie, ke = read_files()
 
 
 
@@ -230,7 +230,7 @@ def draw_sector(ax, center, radius, theta_start, theta_end, sign):
 
 st.title("Карта пациента")
 st.markdown(f'Дата: **{datetime.now().strftime("%d.%m.%Y")}**')
-ddate = st.sidebar.text_input('Введите дату приёма', '')
+# ddate = st.sidebar.text_input('Введите дату приёма', '')
 # Вводим имя пациента
 patient = st.sidebar.text_input('Введите Ф.И.О. пациента', '')
 
@@ -545,25 +545,26 @@ if born:
 
             if st.sidebar.button("Save",type="primary"):
                 new_save = pd.DataFrame(
-                    index=[ddate],#[str(datetime.now().strftime("%d.%m.%Y"))],
+                    index=[datetime.now().date()],
                     data=[[patient, born, complaints, method, canals_plus, canals_minus, block, wind,
                         protivotok, xue, tree, fire, water, earth, metall, pp, comments]],
                     columns=['ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'застой', 'недостаток', 'блок', 'Gui', 
                             'противоток', 'xue', 'пат.рост', 'жар', 'холод', 'сырость', 'сухость', 'лечение', 'комментарии']
-                ).replace("[]", None)
+                )
                 
-                save_all = pd.read_csv("patients/all_patients.csv", index_col='Unnamed: 0')
+                save_all = pd.read_csv("patients/patients.csv", index_col='Дата')
                 save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
-                save_all.to_csv("patients/all_patients.csv")
-                try:
-                    df_saved = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
-                    save = pd.concat([df_saved, new_save], axis=0)#.drop_duplicates()
-                    save.to_csv(f"patients/{patient}.csv")
-                    # st.dataframe(save)
-                    st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
-                except:
-                    new_save.to_csv(f"patients/{patient}.csv")
-                    st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                save_all.to_csv("patients/patients.csv")
+                st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                
+                # try:
+                #     df_saved = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
+                #     save = pd.concat([df_saved, new_save], axis=0)#.drop_duplicates()
+                #     save.to_csv(f"patients/{patient}.csv")
+                #     # st.dataframe(save)
+                #     st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                # except:
+                #     new_save.to_csv(f"patients/{patient}.csv")
 
 ####################################   Лунные дворцы    ############################################
 
@@ -657,19 +658,19 @@ if born:
 
             if st.sidebar.button("Save",type="primary"):
                 new_save = pd.DataFrame(
-                    index=[ddate],#[str(datetime.now().strftime("%d.%m.%Y"))],
+                    index=[datetime.now().date()],
                     data=[[patient, born, complaints, method, doh, pp, comments]],
                     columns=['ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'дата события', 'лечение', 'комментарии']
-                ).replace('[]', None)
-                save_all = pd.read_csv("patients/all_patients.csv", index_col='Unnamed: 0')
+                )
+                save_all = pd.read_csv("patients/patients.csv", index_col='Дата')
                 save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
-                save_all.to_csv("patients/all_patients.csv")                
-                try:
-                    df_saved = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
-                    save = pd.concat([df_saved, new_save], axis=0)
-                    # st.dataframe(save)
-                    save.to_csv(f"patients/{patient}.csv")
-                    st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
-                except:
-                    new_save.to_csv(f"patients/{patient}.csv")
-                    st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                save_all.to_csv("patients/patients.csv")               
+                st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                # try:
+                #     df_saved = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
+                #     save = pd.concat([df_saved, new_save], axis=0)
+                #     # st.dataframe(save)
+                #     save.to_csv(f"patients/{patient}.csv")
+                #     st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                # except:
+                #     new_save.to_csv(f"patients/{patient}.csv")
