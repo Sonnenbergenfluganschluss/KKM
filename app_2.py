@@ -5,6 +5,7 @@ from PIL import Image
 import re
 import matplotlib.pyplot as plt
 import numpy as np
+import csv
 
 @st.cache_data
 def get_Ke(d, value):
@@ -288,7 +289,7 @@ if born:
 
     if st.checkbox("Показать предыдущую запись"):
         try:
-            df_save = pd.read_csv("patients/patients.csv", index_col='Unnamed: 0')
+            df_save = pd.read_csv("patients/patients.csv", index_col='Дата')
             df_save = df_save[df_save['ФИО']==patient][-1:].dropna(axis=1)
             st.dataframe(df_save.T, use_container_width=True)
         except:
@@ -296,7 +297,7 @@ if born:
 
     if st.checkbox("Показать все записи"):
         try:
-            df_save = pd.read_csv(f"patients/patients.csv", index_col='Unnamed: 0')
+            df_save = pd.read_csv(f"patients/patients.csv", index_col='Дата')
             df_save_2 = df_save[df_save['ФИО']==patient]
             st.dataframe(df_save_2, use_container_width=True)
         except:
@@ -545,17 +546,23 @@ if born:
             ################################        Сохраняем пациента         ############################################
 
             if st.sidebar.button("Save",type="primary"):
-                new_save = pd.DataFrame(
-                    index=[datetime.now().date()],
-                    data=[[patient, born, complaints, method, canals_plus, canals_minus, block, wind,
-                        protivotok, xue, tree, fire, water, earth, metall, pp, comments]],
-                    columns=['ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'застой', 'недостаток', 'блок', 'Gui', 
-                            'противоток', 'xue', 'пат.рост', 'жар', 'холод', 'сырость', 'сухость', 'лечение', 'комментарии']
-                )
-                
-                save_all = pd.read_csv("patients/patients.csv", index_col='Дата')
-                save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
-                save_all.to_csv("patients/patients.csv")
+                # new_save = pd.DataFrame(
+                #     index=[],
+                #     data=[],
+                #     columns=['Дата', 'ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'застой', 'недостаток', 'блок', 'Gui', 
+                #             'противоток', 'xue', 'пат.рост', 'жар', 'холод', 'сырость', 'сухость', 'лечение', 'комментарии']
+                # )
+                doh = None
+                new_save = [datetime.now().date(), patient, born, complaints, method, canals_plus, canals_minus, block, wind,
+                        protivotok, xue, tree, fire, water, earth, metall, pp, comments, doh]
+
+                with open('patients/patients.csv', 'a', encoding='utf-8') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(new_save) 
+                file.close()
+                # save_all = pd.read_csv("patients/patients.csv", index_col='Дата')
+                # save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
+                # save_all.to_csv("patients/patients.csv")
                 st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
                 
                 # try:
@@ -660,14 +667,21 @@ if born:
             ################################        Сохраняем пациента         ############################################
 
             if st.sidebar.button("Save",type="primary"):
-                new_save = pd.DataFrame(
-                    index=[datetime.now().date()],
-                    data=[[patient, born, complaints, method, doh, pp, comments]],
-                    columns=['ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'дата события', 'лечение', 'комментарии']
-                )
-                save_all = pd.read_csv("patients/patients.csv", index_col='Дата')
-                save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
-                save_all.to_csv("patients/patients.csv")               
+                # new_save = pd.DataFrame(
+                #     index=[datetime.now().date()],
+                #     data=[[patient, born, complaints, method, doh, pp, comments]],
+                #     columns=['ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'дата события', 'лечение', 'комментарии']
+                # )
+                canals_plus, canals_minus, block, wind, protivotok, xue, tree, fire, water, earth, metall = None, None, None, None, None, None, None, None, None, None, None
+                new_save = [datetime.now().date(), patient, born, complaints, method, canals_plus, canals_minus, block, wind,
+                        protivotok, xue, tree, fire, water, earth, metall, pp, comments, doh]
+                with open('patients/patients.csv', 'a', encoding='utf-8') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(new_save) 
+                file.close()
+                # save_all = pd.read_csv("patients/patients.csv", index_col='Дата')
+                # save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
+                # save_all.to_csv("patients/patients.csv")               
                 st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
                 # try:
                 #     df_saved = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
