@@ -288,15 +288,16 @@ if born:
 
     if st.checkbox("Показать предыдущую запись"):
         try:
-            df_save = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0').iloc[-1:]
-            df_save = df_save.replace('[]', None).dropna(axis=1)
+            df_save = pd.read_csv("patients/patients.csv", index_col='Unnamed: 0')
+            df_save = df_save[df_save['ФИО']==patient][-1:].dropna(axis=1)
             st.dataframe(df_save.T, use_container_width=True)
         except:
             st.markdown(f':red[Пациент **{patient}** отсутствует в базе данных]')
 
     if st.checkbox("Показать все записи"):
         try:
-            df_save_2 = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
+            df_save = pd.read_csv(f"patients/patients.csv", index_col='Unnamed: 0')
+            df_save_2 = df_save[df_save['ФИО']==patient]
             st.dataframe(df_save_2, use_container_width=True)
         except:
             st.markdown(f':red[Пациент **{patient}** отсутствует в базе данных]')        
