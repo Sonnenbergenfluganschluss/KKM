@@ -618,21 +618,23 @@ if born:
             
             if sex == "Мужчина":
                 points_ld = man[lunar_day-1]
-                st.markdown(f"##### Точки по лунным дворцам: \t{points_ld}")
+                st.markdown(f"#### Точки по лунным дворцам: \t:green[{points_ld}]")
             
             else:
                 points_ld = woman[lunar_day-1]
-                st.markdown(f"##### Точки по лунным дворцам: \t{points_ld}")
+                st.markdown(f"#### Точки по лунным дворцам: \t:green[{points_ld}]")
 
-            
-            
-            points_ld = points_ld.split(', ')
-            for el in points_ld:
-                elem = re.match("\D*", el)[0]
-                if elem in dnt_use:
-                    st.warning(f"Точку **{el}** использовать нельзя!!!")
-
-
+            # points_ld = points_ld.split(', ')
+            # for el in points_ld:
+            #     elem = re.match("\D*", el)[0]
+            #     if elem in dnt_use:
+            #         st.warning(f"Точку **{el}** использовать нельзя!!!")
+            for p in points_ld.split(', '):
+                st.markdown(f"#### :green[{p}]")
+                try:
+                    st.markdown(f"""*{points.loc[p, "Локализация"]}*""")
+                except:
+                    st.markdown(f"""*Точки нет в базе данных*""")
             st.markdown(f"""*{technika['ld']}*""")
 
         #################################################       Выбранные точки      ##################################################
