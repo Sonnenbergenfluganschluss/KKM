@@ -5,6 +5,7 @@ from PIL import Image
 import re
 import matplotlib.pyplot as plt
 import numpy as np
+import csv
 
 @st.cache_data
 def get_Ke(d, value):
@@ -18,17 +19,18 @@ def read_files():
     polugodie = pd.read_csv("Полугодия.csv", index_col="year")
     u_sin = pd.read_csv("У-син.csv", index_col="Орган")
     season_qi = pd.read_csv("season_qi.csv", index_col="Орган")
-    qi = pd.read_csv("qi.csv", index_col="Стихия")
+    # qi = pd.read_csv("qi.csv", index_col="Стихия")
     stvoly = pd.read_csv("stvoly.csv", index_col="year")
     vetvi = pd.read_csv("vetvi.csv", index_col="year")
     sloy = pd.read_csv("sloy.csv", index_col="year")
     table = pd.read_csv("table.csv", index_col='Орган')
-    # points = pd.read_csv("points.csv", index_col=0)
+    points = pd.read_csv("points.csv", index_col=0)
     pitanie = pd.read_csv("pitanie.csv", index_col='Unnamed: 0')
     ke = pd.read_csv("ke.csv", index_col='Unnamed: 0')
-    return polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table, pitanie, ke
+    return polugodie, u_sin, season_qi, stvoly, vetvi, sloy, table, points, pitanie, ke
 
-polugodie, u_sin, season_qi, qi, stvoly, vetvi, sloy, table, pitanie, ke = read_files()
+polugodie, u_sin, season_qi, stvoly, vetvi, sloy, table, points, pitanie, ke = read_files()
+
 
 
 
@@ -71,6 +73,23 @@ home_Ke = {'Liv': 'Gb',
             'Co': 'Lu',
             'Kid': 'Bl',
             'Bl': 'Kid'}
+
+technika = {"gui":"Используется техника выведения:\
+                \nПарные иглы ставятся билатерально в дистперсии под углом 90\*\
+                \nПоследовательность постановки - по полу: с сильной стороны на слабую. \
+                \nОдиночные иглы ставятся в дисперсии под углом 90\*",
+            "xue":"Иглы ставятся билатерально в технике <<тяни-толкай>>:\
+                \nПод углом 90\* на здоровой стороне в тонизации, на больной - в дисперсии.\
+                \nСнимаются в обратном порядке. \
+                \nПри двусторонней или срединной травме иглы ставятся по полу:\
+                \nна сильной стороне в тонизации, на слабой - в дисперсии.",
+            "pit":"Иглы ставятся в тонизации, по полу, на слабой стороне:\
+                \nдля мужчин - слева, для женщин - справа",
+            "JJ":"Иглы ставятся билатерально под углом 45\* на здоровой стороне в тонизации, на больной - в дисперсии.\
+                \nСнимаются в обратном порядке.", 
+            "ld":"Если на сеансе используем только точки <<лунных дворцов>>, то иглы ставятся билатерально в тонизации под углом 90\*.\
+                \nЕсли <<лунные дворцы>> используются как дополнение к лечению, то иглы ставятся в тонизации с одной стороны по полу, на слабой стороне:\
+                \nдля мужчин - слева, для женщин - справа"}
 
 vis_yaer = [1920, 1924, 1928, 1932, 1936, 1940, 1944, 1948, 1952, 1956, 1960, 1964, 1968, 
             1972, 1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008, 2012, 2016, 2020, 
@@ -168,49 +187,67 @@ def get_chan(string):
         else:
             st.error(f"""*Название канала '{c.capitalize()}' введено неверно. Попробуйте снова!*""")
             break
-    return canals    
-
-
-def get_chan(string):
-    canals_p = re.sub('[:,/.;#$%^&]', ' ', string).split()
-    canals = []
-    for c in canals_p:
-        if c.capitalize() in u_sin_pitanie.keys():
-            canals.append(c.capitalize())
-        else:
-            st.error(f"""*Название канала '{c.capitalize()}' введено неверно. Попробуйте снова!*""")
-            break
     return canals
 
+
+def get_list_of_channels(lst, table, srez):
+    a = []
+    for i in lst:
+        a += table[i][:srez].to_list()
+        
+    a = " ".join(a).replace(",", '')
+    a = a.replace(",", '')
+    a = re.sub("\d", "", a)   
+    return a.split()
+ 
+
+# Функция для рисования секторов графа
+def draw_sector(ax, center, radius, theta_start, theta_end, sign):
+    # Угол в радианах
+    theta = np.linspace(np.radians(theta_start), np.radians(theta_end), 100)
+    x = np.append(center[0], center[0] + radius * np.cos(theta))
+    y = np.append(center[1], center[1] + radius * np.sin(theta))
+
+    # Заполняем сектор цветом
+    ax.fill(x, y, color='lightgrey', alpha=0.5)
+    count = 0
+    cnt = 0
+    for s in sign:
+        # Добавляем маленькие кружочки
+        if s in ['жар', 'холод', 'сырость', 'сухость', 'tree']:
+            circle_x = center[0] + count + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.5)
+            circle_y = center[1] + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.5)
+            ax.add_patch(plt.Circle((circle_x, circle_y), circle_radius, color=colors[s]))
+        # Добавляем знак в центр сектора
+        else:
+            circle_x = center[0] + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.5)
+            circle_y = center[1] - cnt + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.5)
+            ax.text(circle_x, circle_y, s, ha='center', va='center', fontsize=20, fontweight='semibold', color=colors[s])
+        count += 0.15   
+        cnt += 0.45             
 
 
 ########################################  Создаём приложение ######################################
 
-
-
-
 st.title("Карта пациента")
 st.markdown(f'Дата: **{datetime.now().strftime("%d.%m.%Y")}**')
-
-
-# Вводим пол пациента
-sex = st.selectbox(
-    "Выберете пол пациента",
-    ("", "Мужчина", "Женщина"),
-)
-
+# ddate = st.sidebar.text_input('Введите дату приёма', '')
 # Вводим имя пациента
-patient = st.text_input('Введите Ф.И.О. пациента', '')
+patient = st.sidebar.text_input('Введите Ф.И.О. пациента', '')
+
+st.header(patient)
+
 
 # Вводим дату рождения
-date = st.text_input('Введите дату рождения', '')
-if date:
+born = st.sidebar.text_input('Введите дату рождения', '')
+if born:
     try:
-        birthday = str(pd.to_datetime(date, dayfirst=True)).split()[0] #input("Введите дату рождения")
-        st.markdown(f'Дата рождения: {birthday}')
+        born = pd.to_datetime(born, dayfirst=True).strftime("%d.%m.%Y")
+        birthday = str(pd.to_datetime(born, dayfirst=True)).split()[0] #input("Введите дату рождения")
+        st.markdown(f'Дата рождения: **{pd.to_datetime(born, dayfirst=True).strftime("%d.%m.%Y")}**')
     except:
         st.error("Некорректная дата. Попробуйте снова")
-
+        
     # Получаем год и полугодие по китайскому календарю
     year = int(birthday[:4])
     if birthday in polugodie.loc[year, "I полугодие"]:
@@ -236,7 +273,7 @@ if date:
         
         
     # Выводим DataFrame в интерфейсе
-    st.dataframe(df)
+    st.dataframe(df, use_container_width=True)
 
     use = set([df.loc['Ствол', 'Используем'], df.loc['Ветвь', 'Используем']]) | (Zang_Fu_Xu)
         
@@ -248,180 +285,84 @@ if date:
                                             df.loc['Ветвь', 'Используем']]) |
                                             Zang_Fu_Xu)
                                             
-    st.markdown(f"""Нейтральные каналы: {', '.join(list(neutral))}:""")
+    st.markdown(f"""Нейтральные каналы: **{', '.join(list(neutral))}**""")
+
+    if st.checkbox("Показать предыдущую запись"):
+        try:
+            df_save = pd.read_csv("patients/patients.csv", index_col='Дата')
+            df_save = df_save[df_save['ФИО']==patient][-1:].dropna(axis=1)
+            st.dataframe(df_save.T, use_container_width=True)
+        except:
+            st.markdown(f':red[Пациент **{patient}** отсутствует в базе данных]')
+
+    if st.checkbox("Показать все записи"):
+        try:
+            df_save = pd.read_csv(f"patients/patients.csv", index_col='Дата')
+            df_save_2 = df_save[df_save['ФИО']==patient]
+            st.dataframe(df_save_2, use_container_width=True)
+        except:
+            st.markdown(f':red[Пациент **{patient}** отсутствует в базе данных]')        
+
     st.markdown("""--------------------------------------------------""")
+
+
+    complaints = st.sidebar.text_area("Жалобы", "")
+
 
     
     
     ###################################   Выбираем метод лечения:   ##########################################
 
 
-    method = st.selectbox(
+    method = st.sidebar.selectbox(
     "Выберете метод лечения",
-    (" ", "Питание и Ке", "Лунные дворцы", "Травма"))
+    (" ", "Питание и Ке", "Лунные дворцы"))
     
 
     ###################################   Вводим канал в застое:    ###########################################
         
+    if method=="Питание и Ке":
         
-        
-    if method=="Питание и Ке":    
-        plus = st.text_input('Введите канал в застое', '')
+        plus = st.sidebar.text_input('Введите основной канал в застое', '')
         canals_plus = get_chan(plus)
                     
         if canals_plus:
-            y = []
-            df_n = pd.DataFrame(
-                    index=["по стволам", "по ветвям", "по у-син", "внутри дома"]
-                )
-            st.markdown(f"""### Возможные каналы в недостатке:""")
-            for elem in canals_plus:
-                df_p = pd.DataFrame(
-                    {elem:[get_Ke(stvoly_Ke, elem), 
-                            get_Ke(vetvi_Ke, elem),
-                            u_sin_Ke[elem],
-                            home_Ke[elem]]}, 
-                    index=["по стволам", "по ветвям", "по у-син", "внутри дома"]
-                )
-                df_n = pd.concat([df_n, df_p], axis=1) 
+            # st.dataframe(ke[canals_plus][:4]) 
+            
+            a = get_list_of_channels(canals_plus, ke, 4)
 
-                y.append(get_Ke(stvoly_Ke, elem))
-                y.append(get_Ke(vetvi_Ke, elem))
-                
-                if type(u_sin_Ke[elem]) == type(list()):
-                    y.append(u_sin_Ke[elem][0])
-                    y.append(u_sin_Ke[elem][1])
-                else:
-                    y.append(u_sin_Ke[elem])
-                    
-                if type(home_Ke[elem]) == type(list()):    
-                    y.append(home_Ke[elem][0])
-                    y.append(home_Ke[elem][1])
-                else:
-                    y.append(home_Ke[elem])
-                    
-            st.dataframe(df_n)
-
-            y = [x for x in y if x is not None]
-
-            ke_channels = set(y)
-            st.markdown(f"""Каналы *$Ке$* для {', '.join(list(canals_plus))} : :blue[**{', '.join(list(ke_channels))}**]""")
+            st.sidebar.markdown(f"""Возможные каналы в недостатке:""")
+            st.sidebar.markdown(f""":blue[**{', '.join(list(set(a)))}**]""")
+            
 
 
-
-        ###################################   Для канала в недостатке:  ########################################
+    ###################################   Для канала в недостатке:  ########################################
         
-        minus = st.text_input('Введите канал в недостатке', '')
+        minus = st.sidebar.text_input('Введите канал в недостатке', '')
         canals_minus = get_chan(minus)
  
         if canals_minus:
-            st.markdown("""### Выбор точек питания (перечисление по мере снижения эффективности):""")
-            
-            df_3 = pd.DataFrame(
-                columns=canals_minus,
-                index=["Точка трансформации", "Точка качества дома", "Точка сезонной ци", "Точки трансформации \nсезонной ци"]
-            )
-            
-            channels = []
-            for minus in canals_minus:
-                channels.append(u_sin_pitanie[minus])
-                try:
-                    df_3.loc[df_3.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
-                except:
-                    df_3.loc[df_3.index[0], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_Ke[minus], "Стихия"], u_sin_pitanie[minus]]}'
-                
-                try:
-                    df_3.loc[df_3.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"].mode()[0], u_sin_pitanie[minus]]}'
-                except:
-                    df_3.loc[df_3.index[1], minus] = f'{u_sin_pitanie[minus]}{qi.loc[u_sin.loc[u_sin_pitanie[minus], "Стихия"], u_sin_pitanie[minus]]}'
+            zastoi = get_list_of_channels(canals_minus, ke, 4)
+            st.sidebar.markdown(f"""Возможные каналы в застое:""")
+            st.sidebar.markdown(f""":blue[**{', '.join(list(set(zastoi)))}**]""")
 
-                
-                cell = " "
-                for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
-                    cell+=(f'{c}{qi.loc[stihiya[season_qi.loc[minus, "Стихия"]], c]}, ')
-                    channels.append(c)
-                df_3.loc[df_3.index[2], minus] = cell
-
-                celll = " "
-                for c in season_qi[season_qi["Стихия"] == stihiya[season_qi.loc[minus, "Стихия"]]].index.to_list():
-                    celll+=(f'{c}{qi.loc[stihiya[stihiya[season_qi.loc[minus, "Стихия"]]], c]}, ')  
-                df_3.loc[df_3.index[3], minus] = celll 
-                # if type(home_Ke['Ht']) == type(str()): 
-                #     df_3.loc[df_3.index[4], minus] = table.loc[home_Ke[minus], 'Luo']
-                # else:
-                #     df_3.loc[df_3.index[4], minus] = table.loc[home_Ke[minus][0], 'Luo']
-
-            #Выводим DataFrame в интерфейсе
-            st.dataframe(df_3)    
-
-            st.markdown(f"""Возможные каналы для питания: **{', '.join(list(set(channels)))}**""")  
-            
-            dnt_use = set([df.loc['Ствол', 'Не используем'], df.loc['Ветвь', 'Не используем']]) | set(canals_minus) | set(canals_plus)
-
-            if (set(channels) & dnt_use):
-                st.warning(f""":red[!!!  Конфликт с запрещёнными каналами: **{', '.join(list(set(channels) & dnt_use))}** !!!]""")
-            else:
-                st.markdown("""Конфликт с запрещёнными каналами: :green[*Конфликта нет*]""")
-
-            
-            one_spine = []
-            for n in list((set(channels) & ke_channels)):
-                if (n not in dnt_use):
-                    one_spine.append(n)
-
-            if one_spine:
-                st.markdown(f"""Одновременно питание недостатка и Ке на застой: :green[**{', '.join(one_spine)}**]""")  
-                st.markdown(f"""Подходящие точки в порядке снижения эффективности:""")
-                points = []
-                for i in df_3.columns:
-                    point = ", ".join(df_3[i].to_list())
-                    needed_points = re.findall(list(one_spine)[0]+"\d+", point)
-                    st.markdown(f"""**{', '.join(list(needed_points))}**""")
-            else:
-                st.markdown(f"""*Одной иглой питание недостатка и Ке на застой не получится, - нет пересекающихся каналов*""")  
-            
-                second_spine = []
-                
-                for n in list(set(channels)):
-                    if (n in use) & (n not in dnt_use):
-                        second_spine.append(n)
-
-                if second_spine:
-                    st.markdown(f"""Подходящие точки рекомендованных каналов для питания в порядке снижения эффективности:""")
-                    points = []
-                    for i in df_3.columns:
-                        point = ", ".join(df_3[i].to_list())
-                        needed_points = re.findall(second_spine[0]+"\d+", point)
-                        
-                        st.markdown(f"""**{', '.join(list(needed_points))}**""")
-                        
-                else:
-                    st.markdown(f"""*Подходящих точек не найдено :(*""") 
-
-                # for channal in canals_plus:
-                #     st.markdown(f"""Застой в канале {channal} корректируем техникой 'тяни-толкай', точка:""")
-                #     st.markdown(f"""**{table.loc[channal, 'Jing_Jin']}**""")
-            
-                #     image_path = f"data/{table.loc[channal, 'Jing_Jin']}.jpg"
-                #     image = Image.open(image_path)
-                #     st.image(image, width=300)
-
-
-            st.markdown("""--------------------------------------------------""")
-
-        wind = get_chan(st.text_input('Введите каналы с ветром', ''))
-        xue = get_chan(st.text_input('Xue', ''))
-        tree = get_chan(st.text_input('Патологический рост', ''))
-        fire = get_chan(st.text_input('Жар', ''))
-        water = get_chan(st.text_input('Холод', ''))
-        earth = get_chan(st.text_input('Сырость', ''))
-        metall = get_chan(st.text_input('Сухость', ''))
-
-
-############################################## Рисуем карту патогенов ###########################################
+        block = get_chan(st.sidebar.text_input('Введите каналы в блоке', ''))
+        wind = get_chan(st.sidebar.text_input('Введите каналы с ветром', ''))
+        protivotok = get_chan(st.sidebar.text_input('Введите каналы с противотоком', ''))
+        xue = get_chan(st.sidebar.text_input('Xue', ''))
+        if st.sidebar.checkbox("Работа с качеством"):
+            tree = get_chan(st.sidebar.text_input('Патологический рост', ''))
+            fire = get_chan(st.sidebar.text_input('Жар', ''))
+            water = get_chan(st.sidebar.text_input('Холод', ''))
+            earth = get_chan(st.sidebar.text_input('Сырость', ''))
+            metall = get_chan(st.sidebar.text_input('Сухость', ''))
+        else:
+            tree, fire, water, earth, metall = [], [], [], [], []
 
         di = {'+':canals_plus,
             '__':canals_minus,
+            '>>>':protivotok,
+            '+/-':block,
             'Gui':wind,
             'tree':tree,
             'Xue':xue,
@@ -441,11 +382,7 @@ if date:
                 else:
                     ander[v] = [k]
 
-        # Устанавливаем базовые параметры
-        num_vertices = 5
-        radius = 1
-        circle_radius = 0.08  # Радиус небольших кружков
-        colors = {'жар':'red', 'сырость':'orange', 'сухость':'grey', 'холод':'blue', 'tree':'green'}  # Цвета для кружочков
+        ###################################### Рисуем карту патогенов ###################################
 
         # Генерируем случайные знаки и цвета
         def random_sign(channel, table=ander):
@@ -453,33 +390,14 @@ if date:
                 return table[channel]
             else:
                 return ''
+            
+        # Устанавливаем базовые параметры
+        num_vertices = 5
+        radius = 1
+        circle_radius = 0.08  # Радиус небольших кружков
+        colors = {'жар':'red', 'сырость':'orange', 'сухость':'grey', 'холод':'blue', 'tree':'green', 
+                  "+":"#800080", "__":"#800080", "Gui":"dimgrey", "Xue":"#800000", "+/-":"#800080", ">>>":"#000000"}  # Цвета для символов
 
-        # Функция для рисования секторов графа
-        def draw_sector(ax, center, radius, theta_start, theta_end, sign):
-            # Угол в радианах
-            theta = np.linspace(np.radians(theta_start), np.radians(theta_end), 100)
-            x = np.append(center[0], center[0] + radius * np.cos(theta))
-            y = np.append(center[1], center[1] + radius * np.sin(theta))
-
-            # Заполняем сектор цветом
-            # color = random.choice(colors)  # Выбираем случайный цвет для кружка
-            ax.fill(x, y, color='lightgrey', alpha=0.5)
-            count = 0
-            cnt = 0
-            for s in sign:
-                # Добавляем маленькие кружочки
-                if s in ['жар', 'холод', 'сырость', 'сухость', 'tree']:
-                    circle_x = center[0] + count + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.5)
-                    circle_y = center[1] + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.5)
-                    ax.add_patch(plt.Circle((circle_x, circle_y), circle_radius, color=colors[s]))
-
-                # Добавляем знак в центр сектора
-                else:
-                    circle_x = center[0] + radius * np.cos(np.radians((theta_start + theta_end) / 2)) * (0.5)
-                    circle_y = center[1] - cnt + radius * np.sin(np.radians((theta_start + theta_end) / 2)) * (0.5)
-                    ax.text(circle_x, circle_y, s, ha='center', va='center', fontsize=15)
-                count += 0.15   
-                cnt += 0.45             
 
         # Создание графика
         fig, ax = plt.subplots(figsize=(8, 8))
@@ -508,18 +426,155 @@ if date:
         draw_sector(ax, (np.sin(np.radians(angles[4])) * 2, np.cos(np.radians(angles[4])) * 2), radius, angles[4] + 1 * 180, angles[4] + (1 + 1) * 180, random_sign('gb'))
 
         # Отображаем график
-        plt.title(patient)
+        # plt.title(patient)
         st.write(fig)
 
-        # df_tochki = pd.DataFrame(
-        #     index=di.keys()[2:]
-        # )
+        st.markdown("""--------------------------------------------------""")
+
+        ##### Питание #####
+
+        if canals_minus:            
+            st.markdown(f"""#### Основной недостаток выявлен в канале {canals_minus[0]}:""")
+            # Выводим DataFrame в интерфейсе:
+            st.dataframe(pitanie[canals_minus], use_container_width=True)  
+                
+            m = get_list_of_channels(canals_minus, pitanie, 5)  
+
+            st.markdown("""#### Возможные каналы для питания:""")
+            st.markdown(f"""**:blue[{', '.join(list(set(m)))}]**""") 
+            
+            dnt_use = set([df.loc['Ствол', 'Не используем'], df.loc['Ветвь', 'Не используем']]) | set(canals_minus) | set(canals_plus)
+            
+            if (set(m) & dnt_use):
+                st.warning(f""":red[!!!  Конфликт с запрещёнными каналами: **{', '.join(list(set(m) & dnt_use))}** !!!]""")
+            else:
+                st.markdown("""Конфликт с запрещёнными каналами: :green[*Конфликта нет*]""")
+
+            
+            one_spine = []
+            for i in list((set(m) & set(a))):
+                if (i not in dnt_use):
+                    one_spine.append(i)
+
+            if one_spine:
+                chan_pit = ' '.join(one_spine)
+                st.markdown(f"""Одновременно питание недостатка и Ке на застой: :green[**{chan_pit}**]""")  
+                point_pit = []
+                for i in canals_minus:
+                    pp = pitanie[i][:5].to_list() 
+                    point_pit+=pp
+
+                point_pit = " ".join(point_pit).replace(",", '')
+                point_pit = point_pit.replace(",", '')
+                try:
+                    point_pit = re.search(f"{chan_pit}\d+", point_pit)[0]
+                    st.markdown(f"""#### Подходящие точки для питания в этом случае:""")
+                    st.markdown(f"""#### :green[{point_pit}]""")
+                    st.markdown(f"""*{points.loc[point_pit, "Локализация"]}*""")
+                    st.markdown(f"""*{technika['pit']}*""")
+                except:
+                    chan_pit = chan_pit.split()
+                    st.markdown("""#### Подходящие точки для питания в этом случае:""")
+                    for c in chan_pit:
+                        pp = re.search(f"{c}\d+", point_pit)[0]
+                        st.markdown(f"""#### :green[***{pp}***]""")
+                        try:
+                            st.markdown(f"""*{points.loc[pp, "Локализация"]}*""")
+                        except:
+                            st.markdown(f"""*Точки нет в базе данных*""")
+                    st.markdown(f"""*{technika['pit']}*""")                        
+
+            else:
+                st.markdown(f"""*Одной иглой питание недостатка и Ке на застой не получится, - нет пересекающихся каналов*""")  
+            
+                for channal in canals_plus:
+                    st.markdown(f"""Застой в канале {channal} корректируем техникой 'тяни-толкай', точка:""")
+                    st.markdown(f"""**{table.loc[channal, 'Jing_Jin']}**""")
+                    st.markdown(f"""*{technika['JJ']}*""")
+
+            st.markdown("""--------------------------------------------------""")
+
+        ##### Gui #####
+        if wind:
+            t_gui = []
+            for i in di['Gui']:
+                t_gui.append(table.loc[i, 'Gui'])
+            tt_gui = ', '.join(t_gui)
+            st.markdown(f"""#### Работа с Gui: :green[{tt_gui}]""")
+            for t in t_gui:
+                st.markdown(f"""#### :green[***{t}***]""")            
+                try:
+                    st.markdown(f"""*{points.loc[t, "Локализация"]}*""")
+                except:
+                    st.markdown(f"""*Точки нет в базе данных*""")
+            st.markdown(f"""*{technika['gui']}*""") 
 
 
+        ##### Xue #####
+        if xue:
+            t_xue = []
+            for i in di['Xue']:
+                t_xue.append(table.loc[i, 'Xue'])
+            tt_xue = ', '.join(t_xue)
+            st.markdown(f"""#### Работа с Xue: :green[{tt_xue}]""")
+            for t in t_xue:
+                st.markdown(f"""#### :green[***{t}***]""")            
+                try:
+                    st.markdown(f"""*{points.loc[t, "Локализация"]}*""")
+                except:
+                    st.markdown(f"""*Точки нет в базе данных*""")
+            st.markdown(f"""*{technika['xue']}*""") 
 
+        pp = st.sidebar.text_input("Введите выбранные точки через запятую", "")
+        if pp:
+            st.markdown(f"""#### ***В этом сеансе поставлены точки:***""")
+            st.markdown(f"""#### **:blue[{pp}]**""")
+            # pp = pp.split(",")
+            # show_img = st.radio(
+            #     "Показать точки", ["нет", "да"]
+            # )
+            # if show_img=="да":
+            #     for p in pp:
+            #         p = p.strip().capitalize()
+            #         image_path = f"data/{p}.jpg"
+            #         image = Image.open(image_path)
+            #         st.image(image, width=300)
+
+            comments = st.text_area("Ваши комментарии", "")
+
+            
+            ################################        Сохраняем пациента         ############################################
+
+            if st.sidebar.button("Save",type="primary"):
+                # new_save = pd.DataFrame(
+                #     index=[],
+                #     data=[],
+                #     columns=['Дата', 'ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'застой', 'недостаток', 'блок', 'Gui', 
+                #             'противоток', 'xue', 'пат.рост', 'жар', 'холод', 'сырость', 'сухость', 'лечение', 'комментарии']
+                # )
+                doh = None
+                new_save = [datetime.now().date(), patient, born, complaints, method, canals_plus, canals_minus, block, wind,
+                        protivotok, xue, tree, fire, water, earth, metall, pp, comments, doh]
+
+                with open('patients/patients.csv', 'a', encoding='utf-8') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(new_save) 
+                file.close()
+                # save_all = pd.read_csv("patients/patients.csv", index_col='Дата')
+                # save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
+                # save_all.to_csv("patients/patients.csv")
+                st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                
+                # try:
+                #     df_saved = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
+                #     save = pd.concat([df_saved, new_save], axis=0)#.drop_duplicates()
+                #     save.to_csv(f"patients/{patient}.csv")
+                #     # st.dataframe(save)
+                #     st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                # except:
+                #     new_save.to_csv(f"patients/{patient}.csv")
 
 ####################################   Лунные дворцы    ############################################
-
 
 
     if method=="Лунные дворцы":
@@ -527,14 +582,20 @@ if date:
         image = Image.open(image_path)
         st.image(image, width=600)
         
-        date = st.text_input('Введите дату события', '')
-        if date:
+        # Вводим пол пациента
+        sex = st.sidebar.selectbox(
+            "Выберете пол пациента",
+            ("", "Мужчина", "Женщина"),
+        )
+
+        doh = st.sidebar.text_input('Введите дату события', '')
+        if doh:
             try:
-                date = str(pd.to_datetime(date, dayfirst=True)).split()[0] #input("Введите дату рождения")
+                date = str(pd.to_datetime(doh, dayfirst=True)).split()[0] #input("Введите дату рождения")
                 year = int(date[:4])
                 month = int(date[5:7])
                 day = int(date[8:])
-                st.markdown(f'Дата события: **{date}**')
+                st.markdown(f'Дата события: **{pd.to_datetime(doh, dayfirst=True).strftime("%d.%m.%Y")}**')
             except:
                 st.error("*Некорректная дата. Попробуйте снова*")
 
@@ -564,32 +625,69 @@ if date:
             
             if sex == "Мужчина":
                 points_ld = man[lunar_day-1]
-                st.markdown(f"##### Точки по лунным дворцам: \t{points_ld}")
+                st.markdown(f"#### Точки по лунным дворцам: \t:green[{points_ld}]")
             
             else:
                 points_ld = woman[lunar_day-1]
-                st.markdown(f"##### Точки по лунным дворцам: \t{points_ld}")
+                st.markdown(f"#### Точки по лунным дворцам: \t:green[{points_ld}]")
 
-            
-            
-            points_ld = points_ld.split(', ')
-            for el in points_ld:
-                elem = re.match("\D*", el)[0]
-                if elem in dnt_use:
-                    st.warning(f"Точку **{el}** использовать нельзя!!!")
+            # points_ld = points_ld.split(', ')
+            # for el in points_ld:
+            #     elem = re.match("\D*", el)[0]
+            #     if elem in dnt_use:
+            #         st.warning(f"Точку **{el}** использовать нельзя!!!")
+            for p in points_ld.split(', '):
+                st.markdown(f"#### :green[{p}]")
+                try:
+                    st.markdown(f"""*{points.loc[p, "Локализация"]}*""")
+                except:
+                    st.markdown(f"""*Точки нет в базе данных*""")
+            st.markdown(f"""*{technika['ld']}*""")
 
-    pp = st.text_input("Введите выбранные точки через запятую", "")
-    if pp:
-        pp = pp.split(",")
-        show_img = st.radio(
-            "Показать точки", ["нет", "да"]
-        )
-        if show_img=="да":
-            for p in pp:
-                p = p.strip().capitalize()
-                image_path = f"data/{p}.jpg"
-                image = Image.open(image_path)
-                st.image(image, width=300)
+        #################################################       Выбранные точки      ##################################################
         
+        pp = st.sidebar.text_input("Введите выбранные точки через запятую", "")
+        if pp:
+            st.markdown(f"""#### ***В этом сеансе поставлены точки:***""")
+            st.markdown(f"""#### **:blue[{pp}]**""")
+            # pp = pp.split(",")
+            # show_img = st.radio(
+            #     "Показать точки", ["нет", "да"]
+            # )
+            # if show_img=="да":
+            #     for p in pp:
+            #         p = p.strip().capitalize()
+            #         image_path = f"data/{p}.jpg"
+            #         image = Image.open(image_path)
+            #         st.image(image, width=300)
+
+            comments = st.text_area("Ваши комментарии", "")
 
             
+            ################################        Сохраняем пациента         ############################################
+
+            if st.sidebar.button("Save",type="primary"):
+                # new_save = pd.DataFrame(
+                #     index=[datetime.now().date()],
+                #     data=[[patient, born, complaints, method, doh, pp, comments]],
+                #     columns=['ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'дата события', 'лечение', 'комментарии']
+                # )
+                canals_plus, canals_minus, block, wind, protivotok, xue, tree, fire, water, earth, metall = None, None, None, None, None, None, None, None, None, None, None
+                new_save = [datetime.now().date(), patient, born, complaints, method, canals_plus, canals_minus, block, wind,
+                        protivotok, xue, tree, fire, water, earth, metall, pp, comments, doh]
+                with open('patients/patients.csv', 'a', encoding='utf-8') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(new_save) 
+                file.close()
+                # save_all = pd.read_csv("patients/patients.csv", index_col='Дата')
+                # save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
+                # save_all.to_csv("patients/patients.csv")               
+                st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                # try:
+                #     df_saved = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
+                #     save = pd.concat([df_saved, new_save], axis=0)
+                #     # st.dataframe(save)
+                #     save.to_csv(f"patients/{patient}.csv")
+                #     st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
+                # except:
+                #     new_save.to_csv(f"patients/{patient}.csv")

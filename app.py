@@ -289,11 +289,105 @@ if born:
 
     if st.checkbox("Показать предыдущую запись"):
         try:
-            df_save = pd.read_csv("patients/patients.csv", index_col='Дата')
-            df_save = df_save[df_save['ФИО']==patient][-1:].dropna(axis=1)
-            st.dataframe(df_save.T, use_container_width=True)
+            patients = pd.read_csv("patients/patients.csv", index_col='Дата')
+            patients = patients[patients['ФИО']==patient][-1:].dropna(axis=1)
+            if patients['метод лечения'].values[0] == "Питание и Ке":
+                st.markdown("""====================================================================================""")
+                st.markdown(f"##### :blue[Жалобы на {patients.index[0]}:]")
+                st.markdown(f"{patients['жалобы'].values[0]}")
+                id = patients[patients['ФИО']==patient][-1:].dropna(axis=1).index[0]
+                canals_plus = re.sub("\[|\]|'", "", patients.loc[id, "застой"]).split(", ")   
+                canals_minus = re.sub("\[|\]|'", "", patients.loc[id, "недостаток"]).split(", ")   
+                block = re.sub("\[|\]|'", "", patients.loc[id, "блок"]).split(", ") 
+                wind = re.sub("\[|\]|'", "", patients.loc[id, "Gui"]).split(", ") 
+                protivotok = re.sub("\[|\]|'", "", patients.loc[id, "противоток"]).split(", ") 
+                xue = re.sub("\[|\]|'", "", patients.loc[id, "xue"]).split(", ") 
+                tree = re.sub("\[|\]|'", "", patients.loc[id, "пат.рост"]).split(", ") 
+                fire = re.sub("\[|\]|'", "", patients.loc[id, "жар"]).split(", ") 
+                water = re.sub("\[|\]|'", "", patients.loc[id, "холод"]).split(", ") 
+                earth = re.sub("\[|\]|'", "", patients.loc[id, "сырость"]).split(", ") 
+                metall = re.sub("\[|\]|'", "", patients.loc[id, "сухость"]).split(", ") 
+
+                di = {'+':canals_plus,
+                '__':canals_minus,
+                '>>>':protivotok,
+                '+/-':block,
+                'Gui':wind,
+                'tree':tree,
+                'Xue':xue,
+                'жар':fire,
+                'холод':water,
+                'сырость':earth,
+                'сухость':metall
+                }
+
+                ander = dict()
+
+                for k in di.keys():
+                    for v in di[k]:
+                        v=v.lower()
+                        if v in ander.keys():
+                            ander[v].append(k)
+                        else:
+                            ander[v] = [k]
+
+                ###################################### Рисуем карту патогенов ###################################
+
+
+                # Генерируем случайные знаки и цвета
+                def random_sign(channel, table=ander):
+                    if channel in table.keys():
+                        return table[channel]
+                    else:
+                        return ''
+
+                # Устанавливаем базовые параметры
+                num_vertices = 5
+                radius = 1
+                circle_radius = 0.08  # Радиус небольших кружков
+                colors = {'жар':'red', 'сырость':'orange', 'сухость':'grey', 'холод':'blue', 'tree':'green', 
+                    "+":"#800080", "__":"#800080", "Gui":"dimgrey", "Xue":"#800000", "+/-":"#800080", ">>>":"#000000"}  # Цвета для символов
+
+
+                # Создание графика
+                fig, ax = plt.subplots(figsize=(15,8), )
+                ax.axis('equal')  # Одинаковые масштабы по осям
+                ax.axis('off')  # Отключаем оси
+
+                # Открывающие углы для каждой вершины
+                angles = np.linspace(0, 360, num_vertices+1)
+
+                # Рисуем вершины: одна с 4 секторами, остальные с 2
+                draw_sector(ax, (np.sin(np.radians(angles[0])) * 2, np.cos(np.radians(angles[0])) * 2), radius, 0, 90, random_sign('th'))
+                draw_sector(ax, (np.sin(np.radians(angles[0])) * 2, np.cos(np.radians(angles[0])) * 2), radius, 90, 180, random_sign('si'))
+                draw_sector(ax, (np.sin(np.radians(angles[0])) * 2, np.cos(np.radians(angles[0])) * 2), radius, 180, 270, random_sign('ht'))
+                draw_sector(ax, (np.sin(np.radians(angles[0])) * 2, np.cos(np.radians(angles[0])) * 2), radius, 270, 360, random_sign('hg'))  # 4 сектора для первой вершины
+
+                draw_sector(ax, (np.sin(np.radians(angles[1])) * 2, np.cos(np.radians(angles[1])) * 2), radius, angles[1] + 0 * 180, angles[1] + (0 + 1) * 180, random_sign('sp'))
+                draw_sector(ax, (np.sin(np.radians(angles[1])) * 2, np.cos(np.radians(angles[1])) * 2), radius, angles[1] + 1 * 180, angles[1] + (1 + 1) * 180, random_sign('st'))
+
+                draw_sector(ax, (np.sin(np.radians(angles[2])) * 2, np.cos(np.radians(angles[2])) * 2), radius, angles[1] + 0 * 180, angles[1] + (0 + 1) * 180, random_sign('lu'))
+                draw_sector(ax, (np.sin(np.radians(angles[2])) * 2, np.cos(np.radians(angles[2])) * 2), radius, angles[1] + 1 * 180, angles[1] + (1 + 1) * 180, random_sign('co'))
+
+                draw_sector(ax, (np.sin(np.radians(angles[3])) * 2, np.cos(np.radians(angles[3])) * 2), radius, angles[4] + 0 * 180, angles[4] + (0 + 1) * 180, random_sign('kid'))
+                draw_sector(ax, (np.sin(np.radians(angles[3])) * 2, np.cos(np.radians(angles[3])) * 2), radius, angles[4] + 1 * 180, angles[4] + (1 + 1) * 180, random_sign('bl'))
+
+                draw_sector(ax, (np.sin(np.radians(angles[4])) * 2, np.cos(np.radians(angles[4])) * 2), radius, angles[4] + 0 * 180, angles[4] + (0 + 1) * 180, random_sign('liv'))
+                draw_sector(ax, (np.sin(np.radians(angles[4])) * 2, np.cos(np.radians(angles[4])) * 2), radius, angles[4] + 1 * 180, angles[4] + (1 + 1) * 180, random_sign('gb'))
+
+                # Отображаем график
+                # plt.title(f"{patients.index[0]}", loc='left', fontdict={'fontsize':20})
+
+                st.write(fig)
+                st.markdown(""":blue[Проведённое лечение: ]""")
+                st.markdown(f"""{patients['лечение'].values[0]}""")
+                st.markdown("""====================================================================================""")
+
+            else:
+                st.dataframe(patients.T, use_container_width=True)
         except:
             st.markdown(f':red[Пациент **{patient}** отсутствует в базе данных]')
+
 
     if st.checkbox("Показать все записи"):
         try:
@@ -400,7 +494,7 @@ if born:
 
 
         # Создание графика
-        fig, ax = plt.subplots(figsize=(8, 8))
+        fig, ax = plt.subplots(figsize=(15, 8))
         ax.axis('equal')  # Одинаковые масштабы по осям
         ax.axis('off')  # Отключаем оси
 
