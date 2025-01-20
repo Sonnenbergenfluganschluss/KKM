@@ -293,8 +293,12 @@ if born:
             patients = patients[patients['ФИО']==patient][-1:].dropna(axis=1)
             if patients['метод лечения'].values[0] == "Питание и Ке":
                 st.markdown("""====================================================================================""")
-                st.markdown(f"##### :blue[Жалобы на {patients.index[0]}:]")
-                st.markdown(f"{patients['жалобы'].values[0]}")
+                try:
+                    st.markdown(f"##### :blue[Жалобы на {patients.index[0]}:]")
+                    st.markdown(f"{patients['жалобы'].values[0]}")
+                except:
+                    st.markdown("")
+
                 id = patients[patients['ФИО']==patient][-1:].dropna(axis=1).index[0]
                 canals_plus = re.sub("\[|\]|'", "", patients.loc[id, "застой"]).split(", ")   
                 canals_minus = re.sub("\[|\]|'", "", patients.loc[id, "недостаток"]).split(", ")   
