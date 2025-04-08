@@ -749,7 +749,7 @@ if born:
                 canals_plus, canals_minus, block, wind, protivotok, xue, tree, fire, water, earth, metall = None, None, None, None, None, None, None, None, None, None, None
                 new_save = [datetime.now().date(), patient, born, complaints, method, canals_plus, canals_minus, block, wind,
                         protivotok, xue, tree, fire, water, earth, metall, pp, comments, doh]
-                with open('patients/patients.csv', 'a', encoding='utf-8') as file:
+                with open('https://github.com/Sonnenbergenfluganschluss/KKM/blob/master/patients/patients.csv', 'a', encoding='utf-8') as file:
                     writer = csv.writer(file)
                     writer.writerow(new_save) 
                 file.close()
