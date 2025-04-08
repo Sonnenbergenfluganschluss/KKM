@@ -533,6 +533,7 @@ if born:
 
         if canals_minus:            
             st.markdown(f"""#### Основной недостаток выявлен в канале {canals_minus[0]}:""")
+            
             # Выводим DataFrame в интерфейсе:
             st.dataframe(pitanie[canals_minus], use_container_width=True)  
                 
@@ -641,15 +642,9 @@ if born:
             comments = st.text_area("Ваши комментарии", "")
 
             
-            ################################        Сохраняем пациента         ############################################
+            ##########################        Сохраняем пациента         ##########################
 
             if st.sidebar.button("Save",type="primary"):
-                # new_save = pd.DataFrame(
-                #     index=[],
-                #     data=[],
-                #     columns=['Дата', 'ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'застой', 'недостаток', 'блок', 'Gui', 
-                #             'противоток', 'xue', 'пат.рост', 'жар', 'холод', 'сырость', 'сухость', 'лечение', 'комментарии']
-                # )
                 doh = None
                 new_save = [datetime.now().date(), patient, born, complaints, method, canals_plus, canals_minus, block, wind,
                         protivotok, xue, tree, fire, water, earth, metall, pp, comments, doh]
@@ -658,19 +653,9 @@ if born:
                     writer = csv.writer(file)
                     writer.writerow(new_save) 
                 file.close()
-                # save_all = pd.read_csv("patients/patients.csv", index_col='Дата')
-                # save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
-                # save_all.to_csv("patients/patients.csv")
                 st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
                 
-                # try:
-                #     df_saved = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
-                #     save = pd.concat([df_saved, new_save], axis=0)#.drop_duplicates()
-                #     save.to_csv(f"patients/{patient}.csv")
-                #     # st.dataframe(save)
-                #     st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
-                # except:
-                #     new_save.to_csv(f"patients/{patient}.csv")
+            
 
 ####################################   Лунные дворцы    ############################################
 
@@ -729,11 +714,7 @@ if born:
                 points_ld = woman[lunar_day-1]
                 st.markdown(f"#### Точки по лунным дворцам: \t:green[{points_ld}]")
 
-            # points_ld = points_ld.split(', ')
-            # for el in points_ld:
-            #     elem = re.match("\D*", el)[0]
-            #     if elem in dnt_use:
-            #         st.warning(f"Точку **{el}** использовать нельзя!!!")
+            
             for p in points_ld.split(', '):
                 st.markdown(f"#### :green[{p}]")
                 try:
@@ -762,14 +743,9 @@ if born:
             comments = st.text_area("Ваши комментарии", "")
 
             
-            ################################        Сохраняем пациента         ############################################
+            ################################        Сохраняем пациента         ####################################
 
             if st.sidebar.button("Save",type="primary"):
-                # new_save = pd.DataFrame(
-                #     index=[datetime.now().date()],
-                #     data=[[patient, born, complaints, method, doh, pp, comments]],
-                #     columns=['ФИО', 'дата рождения', 'жалобы', 'метод лечения', 'дата события', 'лечение', 'комментарии']
-                # )
                 canals_plus, canals_minus, block, wind, protivotok, xue, tree, fire, water, earth, metall = None, None, None, None, None, None, None, None, None, None, None
                 new_save = [datetime.now().date(), patient, born, complaints, method, canals_plus, canals_minus, block, wind,
                         protivotok, xue, tree, fire, water, earth, metall, pp, comments, doh]
@@ -777,15 +753,5 @@ if born:
                     writer = csv.writer(file)
                     writer.writerow(new_save) 
                 file.close()
-                # save_all = pd.read_csv("patients/patients.csv", index_col='Дата')
-                # save_all = pd.concat([save_all, new_save], axis=0)#.drop_duplicates()
-                # save_all.to_csv("patients/patients.csv")               
                 st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
-                # try:
-                #     df_saved = pd.read_csv(f"patients/{patient}.csv", index_col='Unnamed: 0')
-                #     save = pd.concat([df_saved, new_save], axis=0)
-                #     # st.dataframe(save)
-                #     save.to_csv(f"patients/{patient}.csv")
-                #     st.sidebar.markdown(""":green[***Файл успешно сохранён!***]""")
-                # except:
-                #     new_save.to_csv(f"patients/{patient}.csv")
+               
