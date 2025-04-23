@@ -230,6 +230,7 @@ def draw_sector(ax, center, radius, theta_start, theta_end, sign):
 ########################################  Создаём приложение ######################################
 
 st.title("Карта пациента")
+st.markdown("*'Любая хорошо развитая технология неотличима от магии'*")
 st.markdown(f'Дата: **{datetime.now().strftime("%d.%m.%Y")}**')
 # ddate = st.sidebar.text_input('Введите дату приёма', '')
 # Вводим имя пациента
