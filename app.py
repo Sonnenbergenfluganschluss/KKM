@@ -236,7 +236,7 @@ st.markdown(f'Дата: **{datetime.now().strftime("%d.%m.%Y")}**')
 # Вводим имя пациента
 patients = pd.read_csv("patients/patients.csv")
 pat = [' '] + patients["ФИО"].values.tolist()
-patient = st.sidebar.text_input('Введите Ф.И.О. пациента', pat)
+patient = st.sidebar.selectbox('Введите Ф.И.О. пациента', pat)
 
 st.header(patient)
 
