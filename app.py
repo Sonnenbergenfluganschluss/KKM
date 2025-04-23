@@ -234,7 +234,9 @@ st.markdown("*'Любая хорошо развитая технология н�
 st.markdown(f'Дата: **{datetime.now().strftime("%d.%m.%Y")}**')
 # ddate = st.sidebar.text_input('Введите дату приёма', '')
 # Вводим имя пациента
-patient = st.sidebar.text_input('Введите Ф.И.О. пациента', '')
+patients = pd.read_csv("patients/patients.csv")
+pat = [' '] + patients["ФИО"].values.tolist()
+patient = st.sidebar.text_input('Введите Ф.И.О. пациента', pat)
 
 st.header(patient)
 
