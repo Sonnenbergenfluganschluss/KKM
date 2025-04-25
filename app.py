@@ -234,15 +234,22 @@ st.markdown("*'Любая хорошо развитая технология н�
 st.markdown(f'Дата: **{datetime.now().strftime("%d.%m.%Y")}**')
 # ddate = st.sidebar.text_input('Введите дату приёма', '')
 # Вводим имя пациента
-patients = pd.read_csv("patients/patients.csv")
-pat = [' '] + patients["ФИО"].values.tolist()
-patient = st.sidebar.selectbox('Введите Ф.И.О. пациента', pat)
+
+if st.sidebar.checkbox('Новый пациент'):
+    patient = st.sidebar.text_input('Введите Ф.И.О. пациента', '')
+else:
+    patients = pd.read_csv("patients/patients.csv")
+    pat = [' '] + patients["ФИО"].values.tolist()
+    patient = st.sidebar.selectbox('Введите Ф.И.О. пациента', pat)
 
 st.header(patient)
-
-
+if patient in patients["ФИО"].to_list():
+    pati = patients[patients["ФИО"]==str(patient)]['дата рождения'].values[0]
+    born = st.sidebar.selectbox('Введите дату рождения', [pati])
 # Вводим дату рождения
-born = st.sidebar.text_input('Введите дату рождения', '')
+else:
+    born = st.sidebar.text_input('Введите дату рождения', '')
+
 if born:
     try:
         born = pd.to_datetime(born, dayfirst=True).strftime("%d.%m.%Y")
