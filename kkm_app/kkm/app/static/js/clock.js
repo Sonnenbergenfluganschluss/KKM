@@ -1,7 +1,4 @@
-/**
- * Функция для обновления времени каждую секунду
- */
- function updateClock() {
+function updateClock() {
     const now = new Date();
     
     // Форматируем время
@@ -16,45 +13,17 @@
     const year = now.getFullYear();
     const dateString = `${day}.${month}.${year}`;
     
-    // День недели
-    const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-    const dayOfWeek = daysOfWeek[now.getDay()];
-    
     // Обновляем DOM
     const timeElement = document.getElementById('time');
     const dateElement = document.getElementById('date');
-    const dayElement = document.getElementById('day-of-week');
     
     if (timeElement) timeElement.textContent = timeString;
     if (dateElement) dateElement.textContent = dateString;
-    if (dayElement) dayElement.textContent = dayOfWeek;
-    
-    // Обновляем прогресс-бар (сколько минут прошло)
-    updateProgressBar(now);
 }
 
-/**
- * Обновляет прогресс-бар, показывающий сколько минут прошло
- */
-function updateProgressBar(now) {
-    const progressElement = document.getElementById('minute-progress');
-    if (!progressElement) return;
-    
-    const seconds = now.getSeconds();
-    const progress = (seconds / 60) * 100;
-    progressElement.style.width = `${progress}%`;
-    
-    // Обновляем счетчик до следующей минуты
-    const countdownElement = document.getElementById('countdown');
-    if (countdownElement) {
-        const secondsLeft = 60 - seconds;
-        countdownElement.textContent = secondsLeft;
-    }
-}
 
-/**
- * Автоматически обновляет данные с сервера каждую минуту
- */
+// Автоматически обновляет данные с сервера каждую минуту
+
 function autoRefresh() {
     // Первое обновление через 60 секунд
     setTimeout(() => {
@@ -64,19 +33,9 @@ function autoRefresh() {
     }, calculateTimeToNextMinute());
 }
 
-/**
- * Вычисляет сколько миллисекунд до следующей минуты
- */
-function calculateTimeToNextMinute() {
-    const now = new Date();
-    const seconds = now.getSeconds();
-    const milliseconds = now.getMilliseconds();
-    return (60 - seconds) * 1000 - milliseconds;
-}
 
-/**
- * Запрашивает точное время с сервера
- */
+// Запрашивает точное время с сервера
+ 
 function fetchTimeFromServer() {
     fetch(window.location.href, {
         headers: {
@@ -102,32 +61,14 @@ function fetchTimeFromServer() {
         if (serverDate) {
             document.getElementById('date').textContent = serverDate;
         }
-        
-        // Показываем уведомление об обновлении
-        showUpdateNotification();
     })
     .catch(error => {
         console.log('Ошибка при обновлении времени:', error);
     });
 }
 
-/**
- * Показывает уведомление об обновлении времени
- */
-function showUpdateNotification() {
-    const notification = document.getElementById('update-notification');
-    if (!notification) return;
-    
-    notification.classList.add('visible');
-    
-    setTimeout(() => {
-        notification.classList.remove('visible');
-    }, 2000);
-}
+// Инициализация часов
 
-/**
- * Инициализация часов
- */
 function initClock() {
     console.log('Часы инициализированы');
     
@@ -144,9 +85,8 @@ function initClock() {
     animateAppearance();
 }
 
-/**
- * Анимация появления элементов
- */
+// Анимация появления элементов
+
 function animateAppearance() {
     const clockContainer = document.querySelector('.clock-container');
     if (clockContainer) {
