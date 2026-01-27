@@ -14,6 +14,11 @@ def kkm_index(request):
     context = {
         'title': 'KKM',
         'current_date_show': datetime.now().strftime("%d.%m.%Y"),
-        'current_time_show': datetime.now().time()
     }
     return render(request, 'app/index.html', context)
+
+
+def get_current_time(request):
+    current_time_show = {'current_time_show': datetime.now().time()}
+    return render(request, current_time_show)
+        
