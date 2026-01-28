@@ -1,0 +1,189 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+    color: #ffffff;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.clock-container {
+    text-align: center;
+    padding: 50px;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 700px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.clock-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+}
+
+.title {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    font-weight: 300;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    opacity: 0.6;
+    margin-bottom: 40px;
+    font-weight: 300;
+}
+
+.time {
+    font-size: 5.5rem;
+    font-weight: 300;
+    margin: 20px 0;
+    text-shadow: 0 0 30px rgba(0, 150, 255, 0.5);
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
+}
+
+.date-container {
+    margin: 30px 0;
+}
+
+.day-of-week {
+    font-size: 1.8rem;
+    opacity: 0.9;
+    margin-bottom: 10px;
+    font-weight: 300;
+}
+
+.date {
+    font-size: 1.6rem;
+    opacity: 0.8;
+}
+
+.progress-container {
+    margin: 40px auto 30px;
+    max-width: 400px;
+    text-align: left;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.progress-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    border-radius: 3px;
+    transition: width 1s linear;
+}
+
+.update-info {
+    margin-top: 40px;
+    font-size: 0.85rem;
+    opacity: 0.5;
+    line-height: 1.5;
+}
+
+.update-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 200, 100, 0.9);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transform: translateX(150%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.update-notification.visible {
+    transform: translateX(0);
+}
+
+.server-time {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    opacity: 0.6;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .clock-container {
+        padding: 30px 20px;
+    }
+    
+    .time {
+        font-size: 3.5rem;
+    }
+    
+    .day-of-week {
+        font-size: 1.4rem;
+    }
+    
+    .date {
+        font-size: 1.2rem;
+    }
+    
+    .title {
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .time {
+        font-size: 2.8rem;
+    }
+    
+    .clock-container {
+        padding: 25px 15px;
+    }
+}
+
+/* Анимация пульсации для секунд */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.seconds {
+    animation: pulse 1s infinite;
+}
