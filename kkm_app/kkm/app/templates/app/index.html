@@ -4,18 +4,47 @@
 {% block title %} Главная {% endblock %}
 
 {% block header %}
+    KKM
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/styles.css'%}" type="text/css">
 {% endblock %}
 
 {% block content %}
-    <div class="container">        
-        <div class="time" id="time">
-            {{ current_time }}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-1">
+                <p>Сегодня:</p> 
+            </div>
+            <div class="col">
+                <div id="date">
+                    {{ current_date }}
+                </div>
+            </div>
+        </div>        
+        <div class="row">
+            <div class="col-md-3">
+                <p>Текущее время: </p> 
+            </div>
+            <div class="col" id="time">
+                
+                    {{ current_time }}
+
+            </div>
+        </div>        
+    </div>
+    
+    <div class="container">
+        <!-- Форма для даты -->
+        <div class="container">
+            <label>Введите дату рождения
+            </label>
+            <input type="date" id="birthdayInput" value="{{ current_date|default:'' }}" style="width: 100%; background-color: #eeeeee;" required>
+            <div id="birthdayResult"></div>
         </div>
-        <div class="date" id="date">
-            {{ current_date }}
-        </div>
+
+
     </div>
 
 

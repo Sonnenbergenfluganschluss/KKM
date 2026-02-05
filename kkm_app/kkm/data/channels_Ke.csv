@@ -1,0 +1,5 @@
+,Gb,Si,Th,St,Co,Bl,Liv,Ht,Hg,Sp,Lu,Kid
+по стволам,Sp,Lu,-,Kid,Liv,Ht,Co,Bl,-,Gb,Si,St
+по ветвям,Ht,Liv,Sp,Hg,Kid,Lu,Si,Gb,St,Th,Bl,Co
+по у-син,Lu,Kid,Kid,Liv,"Hg, Ht",Sp,Co,Bl,Bl,Gb,"Th, Si",St
+внутри дома,Liv,"Ht, Hg","Ht, Hg",Sp,Lu,Kid,Gb,"Si, Th","Si, Th",St,Co,Bl

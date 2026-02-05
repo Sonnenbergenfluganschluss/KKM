@@ -1,14 +1,14 @@
 # import json
-# import pandas as pd
-from datetime import datetime, timedelta, date
-# import re
-# import os
-# from itertools import cycle
-# import logging
+import pandas as pd
+from datetime import datetime
 from django.shortcuts import render, redirect
-# from django.contrib.auth.decorators import login_required
-# from django.contrib import messages
 from django.http import JsonResponse  # если нужен AJAX
+from django.conf import settings
+from .for_views.utils import *
+from .for_views.constaints import *
+
+
+BASE_DIR = settings.BASE_DIR
 
 
 def kkm_index(request):
@@ -31,4 +31,8 @@ def kkm_index(request):
         return JsonResponse(context)
     
     return render(request, 'app/index.html', context)
+
+
+
+
         
