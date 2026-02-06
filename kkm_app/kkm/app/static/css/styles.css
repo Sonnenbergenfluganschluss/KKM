@@ -76,21 +76,13 @@ h1 {
 }
 
 
-input[type="text"] {
-    width: 100%;
-    border: none;
-    border-radius: 10px;
-    text-align: center; 
-    height: 40px; 
-    font-size: 16px;
-}
-
+input[type="text"],
 input[type="password"],
 input[type="email"],
-
 input[type="date"] {
     width: 100%;
     border: none;
+    background-color: #eeeeee;
     border-radius: 10px;
     text-align: center; 
     height: 40px; 

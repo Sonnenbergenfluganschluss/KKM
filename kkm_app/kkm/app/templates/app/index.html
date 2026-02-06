@@ -36,12 +36,30 @@
     </div>
     
     <div class="container">
-        <!-- Форма для даты -->
-        <div class="container">
-            <label>Введите дату рождения
-            </label>
-            <input type="date" id="birthdayInput" value="{{ current_date|default:'' }}" style="width: 100%; background-color: #eeeeee;" required>
-            <div id="birthdayResult"></div>
+        <div class="row">
+            <div class="col-md-5">
+                
+                <!-- ФИО -->
+                <div class="container">
+                    <label for="patient">ФИО</label>
+                    <input type="text" id="patient">
+                </div>
+
+                <!-- Форма для даты -->
+                <div class="container">
+                    <label for="birthdayInput">Введите дату рождения</label>
+                    <input type="date" id="birthdayInput" value="{{ current_date|default:'' }}" style="width: 100%; background-color: #eeeeee;" required>
+                </div>
+
+
+            </div>
+            <div class="col">
+                <div class="container" style="text-align: center;">
+                    <div id="birthdayResult">...</div>
+                </div>
+            </div>
+        </div>
+
         </div>
 
 

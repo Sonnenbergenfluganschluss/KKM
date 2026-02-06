@@ -32,7 +32,30 @@ def kkm_index(request):
     
     return render(request, 'app/index.html', context)
 
+birthday = '1983-12-09'
 
+def cart_of_patient():
+    year = int(birthday[:4])
+    polugodie = read_files('Полугодия', 'year')
+    if birthday in polugodie.loc[year, "I полугодие"]:
+        # st.markdown(f"I полугодие {year} года")
+        polugodie_true = "I полугодие"
+        polugodie_false = "II полугодие"
+    elif birthday in polugodie.loc[year, "II полугодие"]:
+        # st.markdown(f"II полугодие {year} года")
+        polugodie_true = "II полугодие"
+        polugodie_false = "I полугодие"
+    else:
+        # st.markdown(f"II полугодие {year-1} года")
+        polugodie_true = "II полугодие"
+        polugodie_false = "I полугодие"
+        year = year-1
 
+    df = get_cart(year=year)
+    
+    if df.loc["Zang Fu Xu", "Используем"] == None:
+        Zang_Fu_Xu = set()
+    else:
+        Zang_Fu_Xu = set(df.loc["Zang Fu Xu", "Используем"])
 
         
