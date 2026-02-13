@@ -14,24 +14,22 @@ def get_Ke(d, value):
         elif k == value:
             return v
         
-def get_cart(year):
+def get_cart(birthday):
     u_sin = read_files("У-син", index_col="Орган")
-    season_qi = read_files("season_qi.csv", index_col="Орган")
-    stvoly = read_files("stvoly.csv", index_col="year")
-    vetvi = read_files("vetvi.csv", index_col="year")
-    sloy = read_files("sloy.csv", index_col="year")
+    season_qi = read_files("season_qi", index_col="Орган")
+    stvoly = read_files("stvoly", index_col="year")
+    vetvi = read_files("vetvi", index_col="year")
+    sloy = read_files("sloy", index_col="year")
+    polugodie = read_files("Полугодия", index_col="year")
 
     year = int(birthday[:4])
     if birthday in polugodie.loc[year, "I полугодие"]:
-        # st.markdown(f"I полугодие {year} года")
         polugodie_true = "I полугодие"
         polugodie_false = "II полугодие"
     elif birthday in polugodie.loc[year, "II полугодие"]:
-        # st.markdown(f"II полугодие {year} года")
         polugodie_true = "II полугодие"
         polugodie_false = "I полугодие"
     else:
-        # st.markdown(f"II полугодие {year-1} года")
         polugodie_true = "II полугодие"
         polugodie_false = "I полугодие"
         year = year-1
@@ -47,7 +45,6 @@ def get_cart(year):
         0:"Не используем",
         1:"Используем"
     })
-    polugodie = read_files("Полугодия", index_col="year")
 
     home_full = {stvoly.loc[year, 'Стихия'], 
                 u_sin.loc[stvoly.loc[year, 'Орган'], "Стихия"],
@@ -72,7 +69,7 @@ def get_cart(year):
 
     cart.loc["Zang Fu Xu", "Используем"] = a & b 
     if not cart.loc["Zang Fu Xu", "Используем"]:
-        cart.loc["Zang Fu Xu", "Используем"] = None
+        cart.loc["Zang Fu Xu", "Используем"] = " "
     return cart
 
 
