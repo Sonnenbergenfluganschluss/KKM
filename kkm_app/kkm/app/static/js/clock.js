@@ -30,7 +30,7 @@ function autoRefresh() {
         fetchTimeFromServer();
         // Устанавливаем интервал на каждую минуту
         setInterval(fetchTimeFromServer, 60000);
-    }, calculateTimeToNextMinute());
+    });
 }
 
 

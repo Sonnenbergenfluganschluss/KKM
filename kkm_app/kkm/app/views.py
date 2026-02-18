@@ -1,14 +1,14 @@
-# import json
-# import pandas as pd
-from datetime import datetime, timedelta, date
-# import re
-# import os
-# from itertools import cycle
-# import logging
+import json
+import pandas as pd
+from datetime import datetime
 from django.shortcuts import render, redirect
-# from django.contrib.auth.decorators import login_required
-# from django.contrib import messages
-from django.http import JsonResponse  # если нужен AJAX
+from django.http import JsonResponse
+from django.conf import settings
+from .for_views.utils import *
+from .for_views.constaints import *
+
+
+BASE_DIR = settings.BASE_DIR
 
 
 def kkm_index(request):
@@ -31,4 +31,20 @@ def kkm_index(request):
         return JsonResponse(context)
     
     return render(request, 'app/index.html', context)
+
+def cart_of_patient(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            birthday = data.get('birthday')
+            birthday_date = datetime.strptime(birthday, '%Y-%m-%d')
+            
+            result = {
+                'success': True,
+                'birthday_result': birthday_date,
+                'cart_of_patient': get_cart(birthday_date)
+            }
+            return JsonResponse(result)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
         

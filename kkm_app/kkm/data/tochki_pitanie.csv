@@ -1,0 +1,13 @@
+,Орган,Точка трансформации,Точка качества дома,Точка сезонной ци,Точки трансформации сезонной ци
+0,Gb,Bl67,Bl66," Bl67, Kid7, "," Bl40, Kid3, "
+1,Si,Gb43,Gb41," Ht8, Sp2, "," Ht9, Sp1, "
+2,Th,Gb43,Gb41," Bl67, Kid7, "," Bl40, Kid3, "
+3,St,Th3,Th6," Ht8, Sp2, "," Ht9, Sp1, "
+4,Co,St41,St36," Gb43, Th2, "," Gb44, Th1, "
+5,Bl,Co11,Co1," Si8, St36, Liv3, Hg7, "," Si5, St41, Liv2, Hg8, "
+6,Liv,Kid7,Kid10," Ht8, Sp2, "," Ht9, Sp1, "
+7,Ht,Liv8,Liv1," Co3, Lu11, "," Co2, Lu5, "
+8,Hg,Liv8,Liv1," Ht8, Sp2, "," Ht9, Sp1, "
+9,Sp,Hg9,Hg8," Co3, Lu11, "," Co2, Lu5, "
+10,Lu,Sp2,Sp3," Gb43, Th2, "," Gb44, Th1, "
+11,Kid,Lu9,Lu8," Si8, St36, Liv3, Hg7, "," Si5, St41, Liv2, Hg8, "

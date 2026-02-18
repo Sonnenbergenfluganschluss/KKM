@@ -1,0 +1,9 @@
+,Liv,Gb,Ht,Si,Hg,Th,Sp,St,Lu,Co,Kid,Bl
+по стволам,Co,Sp,Bl,Lu,-,-,Gb,Kid,Si,Liv,St,Ht
+по ветвям,Si,Ht,Gb,Liv,St,Sp,Th,Hg,Bl,Kid,Co,Lu
+что по у-син,Co,Lu,Bl,Kid,Bl,Kid,Gb,Liv,"Th, Si","Hg, Ht",St,Sp
+внутри дома,Gb,Liv,"Si, Th","Ht, Hg","Si, Th","Ht, Hg",St,Sp,Co,Lu,Bl,Kid
+пульс,Sp,St,Lu,Co,Kid,Bl,Liv,Gb,Ht,Si,Hg,Th
+слой,Hg,Th,Kid,Bl,Liv,Gb,Lu,Co,Sp,St,Ht,Si
+на что по у-син,St,Sp,Co,Lu,Co,Lu,Bl,Kid,Gb,Liv,"Si, Th","Ht, Hg"
+по качеству,"Gb, St, Lu, Co, Bl","Liv, Ht, Si, Hg, Th, Sp, St, Lu, Kid, Bl","Gb, Hg, Th, Kid","Gb, Hg, Th, Sp, St, Lu, Kid, Bl","Liv, Gb, Ht, Si, Sp, St, Lu","Gb, Ht, Si, Kid","Gb, Si, Hg, St","Liv, Gb, Si, Hg, Sp, Lu","Liv, Gb, Si, Hg, St, Co, Kid, Bl","Liv, Lu, Bl","Gb, Ht, Si, Th, St, Lu, Bl","Liv, Si, Co, Kid, Bl"
